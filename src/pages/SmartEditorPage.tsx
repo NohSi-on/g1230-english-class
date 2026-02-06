@@ -4,6 +4,7 @@ import { ArrowLeft, Bot, Loader2 } from 'lucide-react';
 import { AnalysisSetupModal } from '../components/editor/AnalysisSetupModal';
 import { QuestionEditor } from '../components/editor/QuestionEditor';
 import { supabase } from '../lib/supabase';
+import { useAuth } from '../contexts/AuthContext';
 
 import { extractTextFromLocalFile, convertPdfToImages, getPdfPageCount } from '../services/pdfService';
 import { analyzeText, analyzeImages, regenerateExplanations, type QuestionData } from '../services/aiService';
@@ -11,6 +12,14 @@ import { analyzeText, analyzeImages, regenerateExplanations, type QuestionData }
 export default function SmartEditorPage() {
     const { bookId } = useParams();
     const navigate = useNavigate();
+    const { role } = useAuth();
+
+    useEffect(() => {
+        if (role && role !== 'admin') {
+            console.warn('Access denied: SmartEditor is for admins only.');
+            navigate('/books');
+        }
+    }, [role, navigate]);
 
     // State
     const [bookTitle, setBookTitle] = useState('');
