@@ -20,10 +20,8 @@ export function Sidebar() {
     return (
         <div className="w-64 h-screen bg-white border-r border-slate-200 flex flex-col">
             <div className="p-6 border-b border-slate-100">
-                <h1 className="text-xl font-bold text-slate-800 flex items-center gap-2">
-                    <div className="w-8 h-8 bg-red-600 rounded-lg flex items-center justify-center text-white text-sm">
-                        R
-                    </div>
+                <h1 className="text-xl font-bold text-slate-800 flex items-center gap-3">
+                    <img src="/logo.png" alt="Logo" className="w-10 h-10 object-contain rounded-md" />
                     The Red English
                 </h1>
             </div>
