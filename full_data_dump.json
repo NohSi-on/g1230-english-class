@@ -1,0 +1,545 @@
+{
+  "assessments": [
+    {
+      "id": "2c3f635a-7407-4f40-a049-026b339c0063",
+      "student_id": "c7f9077c-3d71-430c-883c-d8d1a8c38587",
+      "book_id": "9e4952bc-6a85-4ee0-833c-7683290909f5",
+      "score": 0,
+      "details": {
+        "answers": {
+          "82ba59c6-7378-4447-a0eb-dcb844e8e504_1": "CORRECT",
+          "82ba59c6-7378-4447-a0eb-dcb844e8e504_2": "CORRECT",
+          "82ba59c6-7378-4447-a0eb-dcb844e8e504_3": "WRONG",
+          "82ba59c6-7378-4447-a0eb-dcb844e8e504_4": "CORRECT",
+          "82ba59c6-7378-4447-a0eb-dcb844e8e504_5": "WRONG",
+          "82ba59c6-7378-4447-a0eb-dcb844e8e504_6": "CORRECT",
+          "82ba59c6-7378-4447-a0eb-dcb844e8e504_7": "WRONG",
+          "82ba59c6-7378-4447-a0eb-dcb844e8e504_8": "CORRECT",
+          "82ba59c6-7378-4447-a0eb-dcb844e8e504_9": "CORRECT",
+          "3e44cb03-f8d8-430d-b3c6-85759c2c7194_25": "WRONG",
+          "3e44cb03-f8d8-430d-b3c6-85759c2c7194_26": "WRONG",
+          "3e44cb03-f8d8-430d-b3c6-85759c2c7194_27": "CORRECT",
+          "3e44cb03-f8d8-430d-b3c6-85759c2c7194_28": "CORRECT",
+          "3e44cb03-f8d8-430d-b3c6-85759c2c7194_29": "CORRECT",
+          "3e44cb03-f8d8-430d-b3c6-85759c2c7194_30": "CORRECT",
+          "3e44cb03-f8d8-430d-b3c6-85759c2c7194_31": "CORRECT",
+          "3e44cb03-f8d8-430d-b3c6-85759c2c7194_32": "CORRECT",
+          "3e44cb03-f8d8-430d-b3c6-85759c2c7194_33": "CORRECT",
+          "92c47608-4cf6-4fb8-908d-7b05f6ee54c6_17": "WRONG",
+          "92c47608-4cf6-4fb8-908d-7b05f6ee54c6_18": "CORRECT",
+          "92c47608-4cf6-4fb8-908d-7b05f6ee54c6_19": "CORRECT",
+          "92c47608-4cf6-4fb8-908d-7b05f6ee54c6_20": "WRONG",
+          "92c47608-4cf6-4fb8-908d-7b05f6ee54c6_21": "CORRECT",
+          "92c47608-4cf6-4fb8-908d-7b05f6ee54c6_22": "WRONG",
+          "92c47608-4cf6-4fb8-908d-7b05f6ee54c6_23": "WRONG",
+          "92c47608-4cf6-4fb8-908d-7b05f6ee54c6_24": "CORRECT",
+          "d90e54eb-781e-4712-be73-e77fd8f75ab1_10": "WRONG",
+          "d90e54eb-781e-4712-be73-e77fd8f75ab1_11": "CORRECT",
+          "d90e54eb-781e-4712-be73-e77fd8f75ab1_12": "CORRECT",
+          "d90e54eb-781e-4712-be73-e77fd8f75ab1_13": "WRONG",
+          "d90e54eb-781e-4712-be73-e77fd8f75ab1_14": "CORRECT",
+          "d90e54eb-781e-4712-be73-e77fd8f75ab1_15": "CORRECT",
+          "d90e54eb-781e-4712-be73-e77fd8f75ab1_16": "WRONG"
+        }
+      },
+      "created_at": "2026-02-04T14:55:15.680533+00:00",
+      "status": "IN_PROGRESS",
+      "updated_at": "2026-02-04T14:55:40.249+00:00"
+    }
+  ],
+  "questions": [
+    {
+      "id": "82ba59c6-7378-4447-a0eb-dcb844e8e504",
+      "book_id": "9e4952bc-6a85-4ee0-833c-7683290909f5",
+      "page_number": 1,
+      "content": {
+        "items": [
+          {
+            "page": 1,
+            "type": "GRAMMAR",
+            "answer": "①",
+            "itemId": "q1",
+            "concept": "be동사 현재형 (1인칭 단수)",
+            "options": [
+              "am",
+              "are",
+              "is",
+              "was",
+              "were"
+            ],
+            "question": "[ 1 - 3 ] 빈칸에 들어갈 알맞은 말을 고르시오.\n1. I ___ in first grade now.",
+            "explanation": "now로 보아 현재시제이고, 주어가 1인칭 단수이므로 am을 쓴다.",
+            "question_number": "1"
+          },
+          {
+            "page": 1,
+            "type": "GRAMMAR",
+            "answer": "④",
+            "itemId": "q2",
+            "concept": "be동사 과거형 (3인칭 단수)",
+            "options": [
+              "am",
+              "are",
+              "is",
+              "was",
+              "were"
+            ],
+            "question": "[ 1 - 3 ] 빈칸에 들어갈 알맞은 말을 고르시오.\n2. It ___ warm yesterday.",
+            "explanation": "yesterday로 보아 과거시제이고, 주어가 3인칭 단수이므로 was를 쓴다.",
+            "question_number": "2"
+          },
+          {
+            "page": 1,
+            "type": "GRAMMAR",
+            "answer": "⑤",
+            "itemId": "q3",
+            "concept": "be동사 과거형 (3인칭 복수)",
+            "options": [
+              "am",
+              "are",
+              "is",
+              "was",
+              "were"
+            ],
+            "question": "[ 1 - 3 ] 빈칸에 들어갈 알맞은 말을 고르시오.\n3. They ___ at a coffee shop last night.",
+            "explanation": "last night으로 보아 과거시제이고, 주어가 3인칭 복수이므로 were를 쓴다.",
+            "question_number": "3"
+          },
+          {
+            "page": 1,
+            "type": "GRAMMAR",
+            "answer": "are",
+            "itemId": "q4",
+            "concept": "be동사 현재형 (1인칭 복수)",
+            "options": null,
+            "question": "서술형 [ 4 - 5 ] 빈칸에 알맞은 be 동사를 써서 문장을 완성하시오.\n4. Andy and I ___ in the same class this year.",
+            "explanation": "this year로 보아 현재시제이고, 주어가 1인칭 복수(Andy and I)이므로 are를 쓴다.",
+            "question_number": "4"
+          },
+          {
+            "page": 1,
+            "type": "GRAMMAR",
+            "answer": "was",
+            "itemId": "q5",
+            "concept": "be동사 과거형 (3인칭 단수)",
+            "options": null,
+            "question": "서술형 [ 4 - 5 ] 빈칸에 알맞은 be 동사를 써서 문장을 완성하시오.\n5. Lina ___ a high school student two years ago.",
+            "explanation": "two years ago로 보아 과거시제이고, 주어가 3인칭 단수이므로 was를 쓴다.",
+            "question_number": "5"
+          },
+          {
+            "page": 1,
+            "type": "GRAMMAR",
+            "answer": "There is",
+            "itemId": "q6",
+            "concept": "There is + 단수명사",
+            "options": null,
+            "question": "서술형 [ 6 - 7 ] 빈칸에 There is 또는 There are를 넣어 문장을 완성 하시오.\n6. ___ a cat in the room.",
+            "explanation": "There is + 단수명사(a cat)",
+            "question_number": "6"
+          },
+          {
+            "page": 1,
+            "type": "GRAMMAR",
+            "answer": "There are",
+            "itemId": "q7",
+            "concept": "There are + 복수명사",
+            "options": null,
+            "question": "서술형 [ 6 - 7 ] 빈칸에 There is 또는 There are를 넣어 문장을 완성 하시오.\n7. ___ twenty questions on this test.",
+            "explanation": "There are + 복수명사(twenty questions)",
+            "question_number": "7"
+          },
+          {
+            "page": 1,
+            "type": "GRAMMAR",
+            "answer": "⑤",
+            "itemId": "q8",
+            "concept": "be동사 주어-동사 수일치 (현재/과거)",
+            "options": [
+              "It were a great trip.",
+              "He are a good swimmer.",
+              "We was full after lunch.",
+              "His parents is proud of him.",
+              "Susan and Tom are scientists."
+            ],
+            "question": "다음 중 밑줄 친 부분이 올바른 것은?",
+            "explanation": "① It was a great trip. ② He is a good swimmer. ③ We were full after lunch. ④ His parents are proud of him. ⑤ 주어가 복수(Susan and Tom)이므로 are를 사용한 것이 올바르다.",
+            "question_number": "8"
+          },
+          {
+            "page": 1,
+            "type": "GRAMMAR",
+            "answer": "②",
+            "itemId": "q9",
+            "concept": "be동사 부정문 (not의 위치)",
+            "options": [
+              "ⓐ",
+              "ⓑ",
+              "ⓒ",
+              "ⓓ",
+              "ⓔ"
+            ],
+            "question": "다음 문장에서 not 이 들어갈 위치로 적절한 것은?\nBella ⓐ was ⓑ in ⓒ her ⓓ car ⓔ .",
+            "explanation": "주어가 3인칭 단수일 때 be동사 과거형의 부정문은 '주어 + wasn’t[was not]'의 형태이다. 따라서 not은 was 뒤인 ⓑ에 들어가야 한다.",
+            "question_number": "9"
+          }
+        ]
+      },
+      "created_at": "2026-02-04T14:54:35.039886+00:00"
+    },
+    {
+      "id": "d90e54eb-781e-4712-be73-e77fd8f75ab1",
+      "book_id": "9e4952bc-6a85-4ee0-833c-7683290909f5",
+      "page_number": 2,
+      "content": {
+        "items": [
+          {
+            "page": 2,
+            "type": "GRAMMAR",
+            "answer": "②",
+            "itemId": "q10",
+            "concept": "be동사 과거형 의문문과 대답",
+            "options": [
+              "A: Is he busy with homework? B: Yes, he is.",
+              "A: Was Jenny sick yesterday? B: Yes, she were.",
+              "A: Is there a camera on the desk? B: Yes, there is.",
+              "A: Are your dogs big? B: No, they aren’t.",
+              "A: Were you with Minho last night? B: No, I wasn’t."
+            ],
+            "question": "다음 중 대화가 자연스럽지 않은 것은?",
+            "explanation": "② 'Was Jenny ~?'에 대한 답변은 'Yes, she was.' 또는 'No, she wasn’t.'로 해야 한다.",
+            "question_number": "10"
+          },
+          {
+            "page": 2,
+            "type": "GRAMMAR",
+            "answer": "②",
+            "itemId": "q11",
+            "concept": "be동사 부정문 (I am not)",
+            "options": [
+              "This puzzle is difficult. → This puzzle isn’t difficult.",
+              "I am at the mall. → I amn’t at the mall.",
+              "The boxes are heavy. → The boxes aren’t heavy.",
+              "Mr. Smith was a soldier. → Mr. Smith wasn’t a soldier.",
+              "We are good at tennis. → We’re not good at tennis."
+            ],
+            "question": "다음 중 긍정문을 부정문으로 잘못 고친 것은?",
+            "explanation": "② I am의 부정형은 I’m not 또는 I am not이다. I amn't는 사용하지 않는다.",
+            "question_number": "11"
+          },
+          {
+            "page": 2,
+            "type": "GRAMMAR",
+            "answer": "③",
+            "itemId": "q12",
+            "concept": "be동사 시제 구분 (현재 vs 과거)",
+            "options": [
+              "It ___ cold last week.",
+              "I ___ 40 kg two years ago.",
+              "My sister ___ in Italy now.",
+              "William ___ at work yesterday?",
+              "There ___ a soccer game last Sunday."
+            ],
+            "question": "[ 12 - 13 ] 빈칸에 들어갈 말이 나머지 넷과 다른 것을 고르시오.\n12.",
+            "explanation": "③은 now가 있으므로 현재시제 동사 is가 들어가고, 나머지는 last week, two years ago, yesterday, last Sunday 등 과거를 나타내는 말이 있으므로 과거시제 동사 was가 들어간다.",
+            "question_number": "12"
+          },
+          {
+            "page": 2,
+            "type": "GRAMMAR",
+            "answer": "④",
+            "itemId": "q13",
+            "concept": "be동사 긍정문/부정문 문맥 파악",
+            "options": [
+              "Jim ___ honest. He is a liar.",
+              "It ___ Tuesday. It’s Wednesday.",
+              "She ___ Korean. She is Chinese.",
+              "He ___ my friend. We’re very close.",
+              "Ms. Park ___ a teacher. She is a writer."
+            ],
+            "question": "[ 12 - 13 ] 빈칸에 들어갈 말이 나머지 넷과 다른 것을 고르시오.\n13.",
+            "explanation": "④는 '우리는 매우 가깝다'는 뒷 문장으로 보아 '그는 내 친구이다'라는 긍정의 의미가 되어야 하므로 is가 들어가고, 나머지는 문맥상 부정의 의미가 되어야 하므로 isn’t가 들어간다.",
+            "question_number": "13"
+          },
+          {
+            "page": 2,
+            "type": "GRAMMAR",
+            "answer": "③",
+            "itemId": "q14",
+            "concept": "be동사 의문문 주어-동사 수일치",
+            "options": [
+              "Is Sarah in the hospital?",
+              "Are you afraid of water?",
+              "Is the stores open today?",
+              "Is he interested in baseball?",
+              "Are your grandparents in London?"
+            ],
+            "question": "[ 14 - 15 ] 다음 중 밑줄 친 부분이 잘못된 것을 고르시오.\n14.",
+            "explanation": "③ the stores는 3인칭 복수이므로 be동사 의문문은 Are로 시작해야 한다.",
+            "question_number": "14"
+          },
+          {
+            "page": 2,
+            "type": "GRAMMAR",
+            "answer": "①",
+            "itemId": "q15",
+            "concept": "There is/are + 명사 수일치",
+            "options": [
+              "There is nice places in Egypt.",
+              "There are two chairs in my room.",
+              "There is fish on the menu tonight.",
+              "There are some books on the sofa.",
+              "There are many parks in my town."
+            ],
+            "question": "[ 14 - 15 ] 다음 중 밑줄 친 부분이 잘못된 것을 고르시오.\n15.",
+            "explanation": "① 'There is + 단수명사', 'There are + 복수명사' 구문이다. nice places는 복수명사이므로 There are를 써야 한다. (There is → There are)",
+            "question_number": "15"
+          },
+          {
+            "page": 2,
+            "type": "GRAMMAR",
+            "answer": "⑤",
+            "itemId": "q16",
+            "concept": "There were + 복수명사",
+            "options": [
+              "There be many people on the street.",
+              "There is many people on the street.",
+              "There are many people on the street.",
+              "There was many people on the street.",
+              "There were many people on the street."
+            ],
+            "question": "다음 우리말을 영어로 바르게 옮긴 것은?\n거리에 많은 사람들이 있었다.",
+            "explanation": "'~들이 있었다'는 과거를 나타내며, 주어(many people)가 복수이므로 'There were + 복수명사'를 사용한다.",
+            "question_number": "16"
+          }
+        ]
+      },
+      "created_at": "2026-02-04T14:54:35.039886+00:00"
+    },
+    {
+      "id": "92c47608-4cf6-4fb8-908d-7b05f6ee54c6",
+      "book_id": "9e4952bc-6a85-4ee0-833c-7683290909f5",
+      "page_number": 3,
+      "content": {
+        "items": [
+          {
+            "page": 3,
+            "type": "GRAMMAR",
+            "answer": "Is, is",
+            "itemId": "q17",
+            "concept": "be동사 의문문과 대답 (3인칭 단수)",
+            "options": null,
+            "question": "서술형 [ 17 - 18 ] 빈칸에 알맞은 be 동사를 써서 대화를 완성하시오.\n17. A: ___ this jacket yours?\nB: Yes, it ___.",
+            "explanation": "주어가 3인칭 단수(this jacket)이므로 is를 쓴다. Yes로 답하므로 긍정형 is로 받는다.",
+            "question_number": "17"
+          },
+          {
+            "page": 3,
+            "type": "GRAMMAR",
+            "answer": "Are, aren’t",
+            "itemId": "q18",
+            "concept": "be동사 의문문과 대답 (1인칭 복수)",
+            "options": null,
+            "question": "서술형 [ 17 - 18 ] 빈칸에 알맞은 be 동사를 써서 대화를 완성하시오.\n18. A: ___ we late for the train?\nB: No, we ___. We have enough time.",
+            "explanation": "현재시제이고 주어가 1인칭 복수(we)이므로 are를 쓴다. ‘Are we ~?’에 대한 부정의 대답은 ‘No, we aren’t.’이다.",
+            "question_number": "18"
+          },
+          {
+            "page": 3,
+            "type": "GRAMMAR",
+            "answer": "Is this movie funny",
+            "itemId": "q19",
+            "concept": "be동사 평서문을 의문문으로 전환",
+            "options": null,
+            "question": "서술형 [ 19 - 20 ] 다음 문장을 ( ) 안의 지시대로 바꿔 쓰시오.\n19. This movie is funny. (의문문으로)\n→ ?",
+            "explanation": "주어가 3인칭 단수일 때 be동사 현재형의 의문문은 'Is + 주어 ~?'의 형태이다.",
+            "question_number": "19"
+          },
+          {
+            "page": 3,
+            "type": "GRAMMAR",
+            "answer": "Jack and Bill aren’t[are not] twins",
+            "itemId": "q20",
+            "concept": "be동사 평서문을 부정문으로 전환",
+            "options": null,
+            "question": "서술형 [ 19 - 20 ] 다음 문장을 ( ) 안의 지시대로 바꿔 쓰시오.\n20. Jack and Bill are twins. (부정문으로)\n→ .",
+            "explanation": "주어가 3인칭 복수일 때 be동사 현재형의 부정문은 '주어 + aren’t[are not]'의 형태이다.",
+            "question_number": "20"
+          },
+          {
+            "page": 3,
+            "type": "GRAMMAR",
+            "answer": "There is a microphone",
+            "itemId": "q21",
+            "concept": "There is + 단수명사",
+            "options": null,
+            "question": "서술형 [ 21 - 23 ] 우리말과 일치하도록 ( ) 안의 말을 이용하여 문장을 완성하시오.\n21. 무대 위에 마이크가 하나 있다. ( there , a microphone )\n→ ___ on the stage.",
+            "explanation": "'~가 있다'는 의미의 'There is + 단수명사' 구문을 사용한다.",
+            "question_number": "21"
+          },
+          {
+            "page": 3,
+            "type": "GRAMMAR",
+            "answer": "is thick, isn’t[is not] boring",
+            "itemId": "q22",
+            "concept": "be동사 긍정문과 부정문 활용",
+            "options": null,
+            "question": "서술형 [ 21 - 23 ] 우리말과 일치하도록 ( ) 안의 말을 이용하여 문장을 완성하시오.\n22. 이 책은 두껍지만 지루하지 않다. ( thick , boring )\n→ This book ___, but it ___.",
+            "explanation": "현재시제이고 주어가 3인칭 단수이므로 is를 쓴다. is의 부정형은 isn’t[is not]이다.",
+            "question_number": "22"
+          },
+          {
+            "page": 3,
+            "type": "GRAMMAR",
+            "answer": "were in the swimming pool",
+            "itemId": "q23",
+            "concept": "be동사 과거형 (3인칭 복수)",
+            "options": null,
+            "question": "서술형 [ 21 - 23 ] 우리말과 일치하도록 ( ) 안의 말을 이용하여 문장을 완성하시오.\n23. 그들은 어제 수영장에 있었다. ( in the swimming pool )\n→ They ___ yesterday.",
+            "explanation": "과거시제(yesterday)이고 주어가 3인칭 복수일 때는 were를 쓴다.",
+            "question_number": "23"
+          },
+          {
+            "page": 3,
+            "type": "GRAMMAR",
+            "answer": "The ticket wasn’t expensive",
+            "itemId": "q24",
+            "concept": "be동사 과거형 부정문 (축약형)",
+            "options": null,
+            "question": "서술형\n우리말과 일치하도록 주어진 조건에 맞게 문장을 완성하시오.\n그 티켓은 비싸지 않았다.\n<조건>\n1 . the ticket , expensive 를 이용할 것\n2 . 줄임말을 쓸 것\n→ .",
+            "explanation": "주어가 3인칭 단수(The ticket)일 때 be동사 과거형의 부정형은 was not이며, 줄임말은 wasn’t이다.",
+            "question_number": "24"
+          }
+        ]
+      },
+      "created_at": "2026-02-04T14:54:35.039886+00:00"
+    },
+    {
+      "id": "3e44cb03-f8d8-430d-b3c6-85759c2c7194",
+      "book_id": "9e4952bc-6a85-4ee0-833c-7683290909f5",
+      "page_number": 4,
+      "content": {
+        "items": [
+          {
+            "page": 4,
+            "type": "GRAMMAR",
+            "answer": "②, ④",
+            "itemId": "q25",
+            "concept": "be동사 문법 종합 (수일치, 시제)",
+            "options": [
+              "He were a great dancer.",
+              "Are they honest people?",
+              "Tokyo aren’t a small city.",
+              "Mom was a nurse ten years ago.",
+              "There is five people in my family."
+            ],
+            "question": "고난도\n다음 중 어법상 옳은 것을 모두 고르면?",
+            "explanation": "① 주어가 3인칭 단수이므로 be동사 과거형은 was (were → was) ③ 주어가 3인칭 단수(Tokyo)이므로 be동사 현재형의 부정형은 isn’t (aren’t → isn’t) ⑤ 'There are + 복수명사' (is → are)",
+            "question_number": "25"
+          },
+          {
+            "page": 4,
+            "type": "GRAMMAR",
+            "answer": "③",
+            "itemId": "q26",
+            "concept": "be동사 문법 종합 (수일치, 시제, There is + 불가산명사)",
+            "options": [
+              "a, b, c",
+              "a, b, d",
+              "a, b, e",
+              "b, c, d",
+              "b, c, e"
+            ],
+            "question": "다음 중 어법상 옳은 것으로 바르게 짝지어진 것은?\na. The firefighter was brave.\nb. The baby is three months old.\nc. The smartphone were not cheap.\nd. There are honey in the jar.\ne. Is she your aunt?",
+            "explanation": "c. 주어가 3인칭 단수(The smartphone)일 때 be동사 과거형은 was (were → was). d. honey는 셀 수 없는 명사이므로 'There is + 셀 수 없는 명사' 구문을 사용한다 (are → is).",
+            "question_number": "26"
+          },
+          {
+            "page": 4,
+            "type": "GRAMMAR",
+            "answer": "③",
+            "itemId": "q27",
+            "concept": "be동사 문법 종합 (수일치, 시제)",
+            "options": [
+              "1개",
+              "2개",
+              "3개",
+              "4개",
+              "5개"
+            ],
+            "question": "고난도\n다음 중 어법상 옳은 것의 개수는?\n• Jenny were hungry this morning.\n• The girls was noisy on the subway.\n• Were they happy at the party?\n• There was a fire last night.\n• My hometown is not far from Seoul.",
+            "explanation": "• Jenny were hungry this morning. → Jenny was hungry this morning.\n• The girls was noisy on the subway. → The girls were noisy on the subway.\n세 문장(Were they happy at the party? / There was a fire last night. / My hometown is not far from Seoul.)이 어법상 옳다.",
+            "question_number": "27"
+          },
+          {
+            "page": 4,
+            "type": "GRAMMAR",
+            "answer": "X, were",
+            "itemId": "q28",
+            "concept": "be동사 과거 시제와 수일치",
+            "options": null,
+            "question": "서술형 [ 28 - 30 ] 밑줄 친 부분이 어법상 옳은지 판단하고, 틀리면 바르게 고치시오.\n28. Claire and I are members of the band last year. (O / X)",
+            "explanation": "last year로 보아 과거시제이고 주어가 1인칭 복수(Claire and I)이므로 were를 쓴다.",
+            "question_number": "28"
+          },
+          {
+            "page": 4,
+            "type": "GRAMMAR",
+            "answer": "O",
+            "itemId": "q29",
+            "concept": "be동사 현재 시제와 수일치",
+            "options": null,
+            "question": "서술형 [ 28 - 30 ] 밑줄 친 부분이 어법상 옳은지 판단하고, 틀리면 바르게 고치시오.\n29. The dog is smart and cute. (O / X)",
+            "explanation": "주어가 3인칭 단수(The dog)일 때 be동사 현재형은 is를 쓴다.",
+            "question_number": "29"
+          },
+          {
+            "page": 4,
+            "type": "GRAMMAR",
+            "answer": "X, are",
+            "itemId": "q30",
+            "concept": "There are + 복수명사",
+            "options": null,
+            "question": "서술형 [ 28 - 30 ] 밑줄 친 부분이 어법상 옳은지 판단하고, 틀리면 바르게 고치시오.\n30. There is a lot of books in my bag. (O / X)",
+            "explanation": "'a lot of books'는 복수명사이므로 'There are + 복수명사'를 사용해야 한다.",
+            "question_number": "30"
+          },
+          {
+            "page": 4,
+            "type": "GRAMMAR",
+            "answer": "Two comedians was → Two comedians were",
+            "itemId": "q31",
+            "concept": "be동사 과거 시제와 수일치 (복수 주어)",
+            "options": null,
+            "question": "서술형 고난도 [ 31 - 33 ] 어법상 틀린 부분을 찾아 바르게 고치시오.\n31. There was a great comedy show last night. Two comedians was on the show. They were very funny. (1개)",
+            "explanation": "과거시제이고 주어가 3인칭 복수(Two comedians)이므로 were를 쓴다.",
+            "question_number": "31"
+          },
+          {
+            "page": 4,
+            "type": "GRAMMAR",
+            "answer": "My English teacher are → My English teacher is",
+            "itemId": "q32",
+            "concept": "be동사 현재 시제와 수일치 (단수 주어)",
+            "options": null,
+            "question": "서술형 고난도 [ 31 - 33 ] 어법상 틀린 부분을 찾아 바르게 고치시오.\n32. My English teacher are nice, and his class is interesting. (1개)",
+            "explanation": "현재시제이고 주어가 3인칭 단수(My English teacher)이므로 is를 쓴다.",
+            "question_number": "32"
+          },
+          {
+            "page": 4,
+            "type": "GRAMMAR",
+            "answer": "There is → There are, I were → I was",
+            "itemId": "q33",
+            "concept": "There are + 복수명사 and be동사 과거형 (1인칭 단수)",
+            "options": null,
+            "question": "서술형 고난도 [ 31 - 33 ] 어법상 틀린 부분을 찾아 바르게 고치시오.\n33. Busan is a nice city. There is beautiful beaches there. I were at the beach last summer. I had a great time there. (2개)",
+            "explanation": "첫 번째는 현재시제이고 복수명사(beautiful beaches)가 쓰였으므로 there are를 쓴다. 두 번째는 last summer로 보아 과거시제이고 주어가 I이므로 was를 쓴다.",
+            "question_number": "33"
+          }
+        ]
+      },
+      "created_at": "2026-02-04T14:54:35.039886+00:00"
+    }
+  ]
+}

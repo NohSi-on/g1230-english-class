@@ -1,0 +1,50 @@
+{
+  "report": {
+    "id": "911858bf-8c4e-44e3-a987-338d34037fbf",
+    "student_id": "19d701b6-d389-477f-a810-55f4b6b912d2",
+    "period_start": "2026-02-03",
+    "period_end": "2026-02-05",
+    "badge_level": "JEUS",
+    "summary_stats": {
+      "accuracy": 0,
+      "prev_radar": {
+        "grammar": 0,
+        "reading": 0,
+        "writing": 0,
+        "listening": 0,
+        "vocabulary": 0
+      },
+      "total_questions": 50,
+      "study_time_hours": 1
+    },
+    "strength_analysis": {
+      "skill": "Key Strengths",
+      "comment": "tesr 학생은 수업에 항상 성실하고 적극적인 자세로 참여하며, 주어진 과제를 빠짐없이 수행하려는 의지가 돋보입니다. 이러한 꾸준함은 앞으로의 영어 실력 향상에 가장 중요한 밑거름이 될 것입니다."
+    },
+    "weakness_analysis": {
+      "concept": "그래머인사이드1본문",
+      "error_rate": 100,
+      "prescription": "<'그래머인사이드1본문' 학습의 연습이 더 필요합니다. 해당 부분의 학습을 위해 보완해야 할 점은 본문에 등장하는 핵심 문법 개념을 강의와 교재를 통해 재확인하고, 문장에 사용된 어휘를 완벽히 암기하는 것입니다. 이후, 문장의 주어와 동사를 찾는 구조 분석 훈련을 병행하여 해석의 정확도를 높여나가야 합니다.>"
+    },
+    "radar_chart_data": {
+      "grammar": 75,
+      "reading": 80,
+      "writing": 60,
+      "listening": 70,
+      "vocabulary": 85
+    },
+    "teacher_comment": "tesr님, 짧은 기간이었지만 매 시간 집중하며 성실하게 따라와 주어 고맙습니다. 아직은 학습한 내용을 문제에 적용하는 것이 다소 어렵게 느껴질 수 있습니다. 하지만 지금의 성실한 자세를 꾸준히 유지하며 배운 내용을 차근차근 복습한다면 분명 좋은 결과가 있을 거예요. 다음 달에는 배운 문법 개념 하나라도 정확히 자신의 것으로 만드는 것을 목표로 함께 나아갑시다.",
+    "learned_content": "이번 달에는 '그래머인사이드1' 교재 본문 내용에 대한 개념 학습 및 문제 풀이를 진행했습니다.",
+    "created_at": "2026-02-04T14:31:04.222703+00:00"
+  },
+  "validation": [
+    {
+      "assessment_id": "b0ee9083-d125-4199-b8f7-35a24a815dd2",
+      "book_id": "d910ab0c-cffa-4e91-bf9f-0c1c1065b61c",
+      "book_title": "그래머인사이드1본문",
+      "sample_key": "72ae5fbe-5b5e-46ca-ac9e-fc9fff102a29_1",
+      "page_id_exists": true,
+      "page_number": 18
+    }
+  ]
+}
