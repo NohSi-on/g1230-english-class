@@ -5,7 +5,6 @@ import { clsx } from 'clsx';
 import { useAuth } from '../../contexts/AuthContext';
 
 const MENU_ITEMS = [
-    { icon: LayoutDashboard, label: '대시보드', path: '/' },
     { icon: BookOpen, label: '교재 관리', path: '/books' },
     { icon: Gamepad2, label: '학습 하기', path: '/learn' },
     { icon: GraduationCap, label: '학생 관리', path: '/students' },
