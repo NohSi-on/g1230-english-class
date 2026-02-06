@@ -1,11 +1,9 @@
 import { useEffect, useState, useMemo } from 'react';
 import { useParams, useNavigate, useSearchParams } from 'react-router-dom';
 import { supabase } from '../lib/supabase';
-import { ChevronLeft, ChevronRight, Save, CheckCircle, XCircle, ArrowLeft, ZoomIn, ZoomOut } from 'lucide-react';
-import { Document, Page, pdfjs } from 'react-pdf';
+import { ChevronLeft, ChevronRight, Save, CheckCircle, XCircle, ArrowLeft } from 'lucide-react';
 
-// Worker Setup for React-PDF
-pdfjs.GlobalWorkerOptions.workerSrc = `//unpkg.com/pdfjs-dist@${pdfjs.version}/build/pdf.worker.min.mjs`;
+// PDF viewer removed as requested
 
 interface Question {
     id: string;
@@ -43,10 +41,8 @@ export default function GradingPage() {
     const { assessmentId } = useParams();
     const navigate = useNavigate();
 
-    // PDF State
-    const [numPages, setNumPages] = useState<number>(0);
+    // Navigation State
     const [pageNumber, setPageNumber] = useState<number>(1);
-    const [scale, setScale] = useState(1.2);
 
     // Data State
     const [assessment, setAssessment] = useState<Assessment | null>(null);
@@ -260,9 +256,9 @@ export default function GradingPage() {
         });
     }, [currentQuestions]);
 
-    function onDocumentLoadSuccess({ numPages }: { numPages: number }) {
-        setNumPages(numPages);
-    }
+    const maxPage = useMemo(() => {
+        return questions.length > 0 ? Math.max(...questions.map(q => q.page_number)) : 20;
+    }, [questions]);
 
     if (loading) return <div className="flex h-screen items-center justify-center">로딩 중...</div>;
     if (!assessment) return <div className="flex h-screen items-center justify-center">과제를 찾을 수 없습니다.</div>;
@@ -277,21 +273,33 @@ export default function GradingPage() {
                     </button>
                     <div>
                         <h1 className="font-bold text-slate-800 text-lg">{assessment.student.name} - {assessment.book.title}</h1>
-                        <span className="text-xs text-slate-500 font-mono">Page {pageNumber} / {numPages}</span>
+                        <div className="flex items-center gap-2 mt-0.5">
+                            <span className="text-xs text-slate-500 font-mono bg-slate-100 px-2 py-0.5 rounded">번호 {pageNumber}</span>
+                            <div className="flex items-center gap-1">
+                                <button
+                                    disabled={pageNumber <= 1}
+                                    onClick={() => setPageNumber(p => p - 1)}
+                                    className="p-1 hover:bg-slate-100 rounded text-slate-400 disabled:opacity-30"
+                                >
+                                    <ChevronLeft size={16} />
+                                </button>
+                                <button
+                                    disabled={pageNumber >= maxPage}
+                                    onClick={() => setPageNumber(p => p + 1)}
+                                    className="p-1 hover:bg-slate-100 rounded text-slate-400 disabled:opacity-30"
+                                >
+                                    <ChevronRight size={16} />
+                                </button>
+                            </div>
+                        </div>
                     </div>
                 </div>
 
                 <div className="flex items-center gap-3">
-                    <div className="flex bg-slate-100 rounded-lg p-1 mr-4">
-                        <button onClick={() => setScale(s => Math.max(0.5, s - 0.1))} className="p-1.5 hover:bg-white rounded-md text-slate-600"><ZoomOut size={18} /></button>
-                        <span className="px-2 flex items-center text-xs font-medium text-slate-600">{Math.round(scale * 100)}%</span>
-                        <button onClick={() => setScale(s => Math.min(3, s + 0.1))} className="p-1.5 hover:bg-white rounded-md text-slate-600"><ZoomIn size={18} /></button>
-                    </div>
-
                     <button
                         onClick={handleSave}
                         disabled={saving}
-                        className="bg-indigo-600 text-white px-4 py-2 rounded-lg font-bold flex items-center gap-2 hover:bg-indigo-700 transition-colors"
+                        className="bg-indigo-600 text-white px-4 py-2 rounded-lg font-bold flex items-center gap-2 hover:bg-indigo-700 transition-colors shadow-lg shadow-indigo-100"
                     >
                         <Save size={18} />
                         {saving ? '저장 중...' : '저장하기'}
@@ -321,57 +329,15 @@ export default function GradingPage() {
             )}
 
             {/* Main Content */}
-            <div className="flex-1 flex overflow-hidden">
-                {/* Left: PDF Viewer */}
-                <div className="flex-1 bg-slate-200 overflow-auto flex justify-center p-8 relative">
-                    {/* Page Navigation Overlay */}
-                    <div className="absolute bottom-6 left-1/2 -translate-x-1/2 bg-white/90 backdrop-blur shadow-lg rounded-full px-4 py-2 flex items-center gap-4 z-20">
-                        <button
-                            disabled={pageNumber <= 1}
-                            onClick={() => setPageNumber(p => p - 1)}
-                            className="p-1 hover:bg-slate-100 rounded-full disabled:opacity-30"
-                        >
-                            <ChevronLeft />
-                        </button>
-                        <span className="font-bold text-slate-700 w-16 text-center">{pageNumber}</span>
-                        <button
-                            disabled={pageNumber >= numPages}
-                            onClick={() => setPageNumber(p => p + 1)}
-                            className="p-1 hover:bg-slate-100 rounded-full disabled:opacity-30"
-                        >
-                            <ChevronRight />
-                        </button>
-                    </div>
-
-                    <Document
-                        file={assessment.book.pdf_url}
-                        onLoadSuccess={onDocumentLoadSuccess}
-                        loading={<div className="text-slate-500">PDF 로딩 중...</div>}
-                    >
-                        <Page
-                            pageNumber={pageNumber}
-                            scale={scale}
-                            renderTextLayer={false}
-                            renderAnnotationLayer={false}
-                            className="shadow-2xl"
-                        />
-                    </Document>
-                </div>
-
-                {/* Right: Grading Panel */}
-                <div className="w-96 bg-white border-l border-slate-200 flex flex-col shadow-xl z-20">
-                    <div className="p-4 border-b border-slate-100 bg-white">
-                        <h2 className="font-bold text-slate-800 flex items-center gap-2">
-                            <CheckCircle className="text-green-500" size={18} />
-                            채점하기
-                        </h2>
-                    </div>
-
-                    <div className="flex-1 overflow-y-auto p-4 space-y-6">
+            {/* Main Content: Full-Width 3-Column Grid */}
+            <div className="flex-1 overflow-y-auto bg-slate-50">
+                <div className="max-w-7xl mx-auto p-6">
+                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                         {currentItems.length === 0 ? (
-                            <div className="text-center text-slate-400 py-12 flex flex-col items-center">
-                                <span className="text-4xl mb-2">📝</span>
-                                <p>등록된 문제가 없습니다.<br />다음 페이지로 넘어가보세요.</p>
+                            <div className="col-span-full text-center text-slate-400 py-20 bg-white rounded-2xl border border-slate-200 border-dashed">
+                                <span className="text-5xl mb-4 block">📝</span>
+                                <p className="text-lg font-medium">이 페이지에는 등록된 문제가 없습니다.</p>
+                                <p className="text-sm mt-1">상단 화살표를 눌러 다른 페이지로 이동해 보세요.</p>
                             </div>
                         ) : (
                             currentItems.map((item) => {
@@ -379,52 +345,52 @@ export default function GradingPage() {
                                 const status = answers[uniqueId];
 
                                 return (
-                                    <div key={uniqueId} className="bg-slate-50 rounded-xl p-4 border border-slate-100">
-                                        <div className="flex justify-between items-start mb-3">
-                                            <span className="bg-slate-200 text-slate-600 text-xs font-bold px-2 py-1 rounded">
+                                    <div key={uniqueId} className="bg-white rounded-2xl p-5 shadow-sm border border-slate-200 hover:shadow-md transition-shadow flex flex-col">
+                                        <div className="flex justify-between items-start mb-4">
+                                            <span className="bg-brand-50 text-brand-700 text-xs font-black px-3 py-1 rounded-full uppercase tracking-wider">
                                                 No.{item.itemId}
                                             </span>
                                             <div className="flex flex-col items-end">
-                                                <span className="text-xs text-slate-400 font-mono">
+                                                <span className="text-xs text-slate-400 font-mono bg-slate-50 px-2 py-1 rounded">
                                                     정답: {item.answer}
                                                 </span>
                                                 {item.concept && (
-                                                    <span className="text-[10px] text-indigo-400 font-bold mt-1">
+                                                    <span className="text-[10px] text-brand-500 font-black mt-2 bg-brand-50 px-2 py-0.5 rounded">
                                                         {item.concept}
                                                     </span>
                                                 )}
                                             </div>
                                         </div>
 
-                                        <div className="text-sm text-slate-800 font-medium mb-4 leading-relaxed">
-                                            {item.question}
+                                        <div className="text-base text-slate-800 font-semibold mb-6 leading-relaxed flex-1 italic">
+                                            "{item.question}"
                                         </div>
 
-                                        <div className="grid grid-cols-2 gap-2">
+                                        <div className="grid grid-cols-2 gap-3 pb-4">
                                             <button
                                                 onClick={() => handleAnswerToggle(uniqueId, 'CORRECT', (item as any).concept)}
-                                                className={`flex items-center justify-center gap-2 py-2 rounded-lg border font-bold transition-all ${status?.status === 'CORRECT'
-                                                    ? 'bg-green-500 border-green-500 text-white shadow-md scale-[1.02]'
-                                                    : 'bg-white border-slate-200 text-slate-400 hover:border-green-300 hover:text-green-500'
+                                                className={`flex items-center justify-center gap-2 py-3 rounded-xl border-2 font-black transition-all ${status?.status === 'CORRECT'
+                                                    ? 'bg-green-500 border-green-500 text-white shadow-lg shadow-green-100 scale-[1.03]'
+                                                    : 'bg-white border-slate-100 text-slate-300 hover:border-green-200 hover:text-green-500'
                                                     }`}
                                             >
-                                                <CheckCircle size={18} />
+                                                <CheckCircle size={20} />
                                                 정답
                                             </button>
                                             <button
                                                 onClick={() => handleAnswerToggle(uniqueId, 'WRONG', (item as any).concept)}
-                                                className={`flex items-center justify-center gap-2 py-2 rounded-lg border font-bold transition-all ${status?.status === 'WRONG'
-                                                    ? 'bg-red-500 border-red-500 text-white shadow-md scale-[1.02]'
-                                                    : 'bg-white border-slate-200 text-slate-400 hover:border-red-300 hover:text-red-500'
+                                                className={`flex items-center justify-center gap-2 py-3 rounded-xl border-2 font-black transition-all ${status?.status === 'WRONG'
+                                                    ? 'bg-red-500 border-red-500 text-white shadow-lg shadow-red-100 scale-[1.03]'
+                                                    : 'bg-white border-slate-100 text-slate-300 hover:border-red-200 hover:text-red-500'
                                                     }`}
                                             >
-                                                <XCircle size={18} />
+                                                <XCircle size={20} />
                                                 오답
                                             </button>
                                         </div>
 
                                         {status?.status === 'WRONG' && (
-                                            <div className="mt-3 pt-3 border-t border-slate-200 flex gap-1 overflow-x-auto no-scrollbar">
+                                            <div className="mt-2 pt-4 border-t border-slate-100 flex gap-1.5 overflow-x-auto no-scrollbar">
                                                 {['개념부족', '단순실수', '해석오류', '어휘부족'].map(tag => (
                                                     <button
                                                         key={tag}
@@ -434,9 +400,9 @@ export default function GradingPage() {
                                                                 [uniqueId]: { ...prev[uniqueId], error_pattern: tag }
                                                             }));
                                                         }}
-                                                        className={`px-2 py-1 rounded text-[10px] font-bold whitespace-nowrap transition-colors ${status.error_pattern === tag
-                                                            ? 'bg-rose-100 text-rose-600 border border-rose-200'
-                                                            : 'bg-white text-slate-400 border border-slate-200 hover:bg-slate-50'
+                                                        className={`px-3 py-1.5 rounded-lg text-xs font-bold whitespace-nowrap transition-all ${status.error_pattern === tag
+                                                            ? 'bg-slate-800 text-white shadow-sm ring-2 ring-slate-800 ring-offset-1'
+                                                            : 'bg-slate-50 text-slate-400 hover:bg-slate-100'
                                                             }`}
                                                     >
                                                         {tag}
@@ -448,6 +414,33 @@ export default function GradingPage() {
                                 );
                             })
                         )}
+                    </div>
+
+                    {/* Footer Navigation */}
+                    <div className="mt-12 flex justify-center py-8 border-t border-slate-200">
+                        <div className="flex items-center gap-8 bg-white px-8 py-3 rounded-2xl shadow-sm border border-slate-200">
+                            <button
+                                disabled={pageNumber <= 1}
+                                onClick={() => setPageNumber(p => p - 1)}
+                                className="flex items-center gap-2 font-bold text-slate-600 hover:text-brand-600 disabled:opacity-30 transition-colors"
+                            >
+                                <ChevronLeft size={24} />
+                                이전
+                            </button>
+                            <div className="h-6 w-px bg-slate-200" />
+                            <span className="text-xl font-black text-slate-800 min-w-16 text-center">
+                                {pageNumber} <span className="text-slate-300 font-normal">/</span> {maxPage}
+                            </span>
+                            <div className="h-6 w-px bg-slate-200" />
+                            <button
+                                disabled={pageNumber >= maxPage}
+                                onClick={() => setPageNumber(p => p + 1)}
+                                className="flex items-center gap-2 font-bold text-slate-600 hover:text-brand-600 disabled:opacity-30 transition-colors"
+                            >
+                                다음
+                                <ChevronRight size={24} />
+                            </button>
+                        </div>
                     </div>
                 </div>
             </div>
