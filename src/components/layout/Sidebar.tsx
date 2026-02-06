@@ -1,4 +1,4 @@
-import { BookOpen, Gamepad2, GraduationCap, LayoutDashboard, Settings, FileText } from 'lucide-react';
+import { BookOpen, Gamepad2, GraduationCap, Settings, FileText } from 'lucide-react';
 import { Link, useLocation } from 'react-router-dom';
 import { clsx } from 'clsx';
 
