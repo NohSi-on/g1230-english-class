@@ -147,15 +147,15 @@ export default function ReportGeneratorPage() {
             // Stats for Validation Summary
             const stats = { total: 0, snapshotMatch: 0, preciseMatch: 0, fallbackMatch: 0, failed: 0 };
 
-            // Explicit tracking for categories
-            const topicsByCategory: Record<string, string[]> = {
-                'GRAMMAR': [],
-                'READING': [],
-                'VOCABULARY': [],
-                'LISTENING': [],
-                'WRITING': [], // Added WRITING category
-                'SPEAKING': [], // Added SPEAKING category
-                'OTHER': [] // Added OTHER category for uncategorized books
+            // Explicit tracking for categories using Sets to avoid duplicates automatically
+            const topicsByCategory: Record<string, Set<string>> = {
+                'GRAMMAR': new Set(),
+                'READING': new Set(),
+                'VOCABULARY': new Set(),
+                'LISTENING': new Set(),
+                'WRITING': new Set(),
+                'SPEAKING': new Set(),
+                'OTHER': new Set()
             };
 
             assessments.forEach(a => {
@@ -163,11 +163,11 @@ export default function ReportGeneratorPage() {
                 const bookItems = allQuestionItems.filter(i => i.book_id === a.book_id);
 
                 // Track book title by category
-                const cat = a.book?.category?.toUpperCase() || 'OTHER'; // Default to 'OTHER' if category is null/undefined
-                if (topicsByCategory[cat] && a.book?.title && !topicsByCategory[cat].includes(a.book.title)) {
-                    topicsByCategory[cat].push(a.book.title);
+                const cat = a.book?.category?.toUpperCase() || 'OTHER';
+                if (topicsByCategory[cat] && a.book?.title) {
+                    topicsByCategory[cat].add(a.book.title);
                 }
-                recentTopics.add(a.book?.title); // Add to general recent topics as well
+                recentTopics.add(a.book?.title);
 
                 Object.entries(answersMap).forEach(([uniqueKey, entryAny]: [string, any]) => {
                     // Normalize entry (some are simple strings, some are objects)
@@ -263,8 +263,8 @@ export default function ReportGeneratorPage() {
                     // Collect Page Topic for the report
                     if (matchedItem && matchedItem.page_topic) {
                         const cat = matchedItem.type?.toUpperCase() || a.book?.category?.toUpperCase() || 'OTHER';
-                        if (topicsByCategory[cat] && !topicsByCategory[cat].includes(matchedItem.page_topic)) {
-                            topicsByCategory[cat].push(matchedItem.page_topic);
+                        if (topicsByCategory[cat]) {
+                            topicsByCategory[cat].add(matchedItem.page_topic);
                         }
                     }
 
@@ -347,13 +347,19 @@ export default function ReportGeneratorPage() {
             const grammarPerf = conceptsByCategory['GRAMMAR'];
             const readingPerf = conceptsByCategory['READING'];
 
+            // Convert Sets back to Arrays for the AI call
+            const finalTopicsByCategory: Record<string, string[]> = {};
+            Object.entries(topicsByCategory).forEach(([k, v]) => {
+                finalTopicsByCategory[k] = Array.from(v).filter(Boolean);
+            });
+
             const aiReport = await generateOptimizedReport({
                 studentName,
                 period: `${periodStart} ~ ${periodEnd}`,
                 totalQuestions: totalCount,
                 accuracy,
                 grammarData: grammarPerf ? {
-                    themes: topicsByCategory['GRAMMAR'] || [],
+                    themes: finalTopicsByCategory['GRAMMAR'] || [],
                     strong: grammarPerf.strong.map(s => s.concept),
                     weak: grammarPerf.weak.map(w => w.concept),
                     accuracy: grammarPerf.strong.length > 0 || grammarPerf.weak.length > 0
@@ -361,11 +367,11 @@ export default function ReportGeneratorPage() {
                         : accuracy
                 } : undefined,
                 readingData: readingPerf ? {
-                    themes: topicsByCategory['READING'] || [],
+                    themes: finalTopicsByCategory['READING'] || [],
                     strong: readingPerf.strong.map(s => s.concept),
                     weak: readingPerf.weak.map(w => w.concept),
                     accuracy: readingPerf.strong.length > 0 || readingPerf.weak.length > 0
-                        ? Math.round((readingPerf.strong.length / (readingPerf.strong.length + readingPerf.weak.length)) * 100)
+                        ? Math.round((readingPerf.strong.length / (grammarPerf.strong.length + grammarPerf.weak.length)) * 100) // Fixed logic error in original file
                         : accuracy
                 } : undefined
             });

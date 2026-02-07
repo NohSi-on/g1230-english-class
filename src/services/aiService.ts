@@ -102,7 +102,10 @@ const getDynamicModel = async (): Promise<string> => {
 export const extractAnswerMap = async (text: string): Promise<AnswerMap> => {
     if (!API_KEY) throw new Error('Gemini API Key is missing');
     const modelName = await getDynamicModel();
-    const model = genAI.getGenerativeModel({ model: modelName });
+    const model = genAI.getGenerativeModel({
+        model: modelName,
+        generationConfig: { responseMimeType: "application/json" }
+    });
 
     const prompt = `
      You are a precise data extractor.
@@ -113,7 +116,7 @@ export const extractAnswerMap = async (text: string): Promise<AnswerMap> => {
      **Instructions**:
      1. Find every question number (1, 2, 3...) and its answer.
      2. Return a simple JSON map: {"1": "3", "2": "5", "3": "A", ...}
-     3. Strict JSON only. No markdown.
+     3. Strict JSON only.
      
      **Input Content**:
      ${text.substring(0, 25000)}
@@ -122,9 +125,7 @@ export const extractAnswerMap = async (text: string): Promise<AnswerMap> => {
     try {
         const result = await model.generateContent(prompt);
         const response = await result.response;
-        // Cleanup JSON
-        const cleaned = response.text().replace(/```json/g, '').replace(/```/g, '').trim();
-        return JSON.parse(cleaned);
+        return JSON.parse(response.text());
     } catch (e) {
         console.error("Answer Map Extraction Failed:", e);
         return {};
@@ -132,10 +133,13 @@ export const extractAnswerMap = async (text: string): Promise<AnswerMap> => {
 };
 
 // --- Step 3: Deep Analysis with Verified Answers ---
-export const analyzeDeepWithVerifiedAnswers = async (questionText: string, verifiedAnswers: AnswerMap): Promise<QuestionData[]> => {
+export const analyzeDeepWithVerifiedAnswers = async (questionText: string, verifiedAnswers: AnswerMap, bookId: string = "book"): Promise<QuestionData[]> => {
     if (!API_KEY) throw new Error('Gemini API Key is missing');
     const modelName = await getDynamicModel();
-    const model = genAI.getGenerativeModel({ model: modelName });
+    const model = genAI.getGenerativeModel({
+        model: modelName,
+        generationConfig: { responseMimeType: "application/json" }
+    });
 
     const verifiedAnswersStr = JSON.stringify(verifiedAnswers, null, 2);
 
@@ -156,7 +160,8 @@ export const analyzeDeepWithVerifiedAnswers = async (questionText: string, verif
        - Bad: "Grammar", "Be-verb"
        - Good: "be-verb (negative sentence)", "relative pronoun 'who' (subjective)", "present continuous (question form)". 
        - This is critical for generating "Twin Questions" later.
-    3. **itemId [STABLE ID]**: Generate a stable ID based on the question number (e.g., "q1", "q2-a").
+    3. **itemId [STABLE ID]**: Generate a globally unique ID using the format '${bookId}_\${page}_\${question_number}' (e.g., '${bookId}_14_q1', '${bookId}_15_q2-a'). 
+       This is mandatory to prevent data collisions across different chapters and books.
     4. **Explanation**: Write a detailed explanation in Korean explaining WHY the verified answer is correct.
     5. **Type**: Classify (GRAMMAR, READING, VOCABULARY, LISTENING).
     6. **Page**: meaningful page number.
@@ -170,8 +175,7 @@ export const analyzeDeepWithVerifiedAnswers = async (questionText: string, verif
     try {
         const result = await model.generateContent(prompt);
         const response = await result.response;
-        const cleanedText = response.text().replace(/```json/g, '').replace(/```/g, '').trim();
-        return JSON.parse(cleanedText);
+        return JSON.parse(response.text());
     } catch (error) {
         console.error('Gemini Deep Analysis Error:', error);
         throw new Error('Failed to analyze content with AI');
@@ -179,7 +183,7 @@ export const analyzeDeepWithVerifiedAnswers = async (questionText: string, verif
 };
 
 // --- Legacy / Direct Analysis ---
-export const analyzeText = async (questionText: string, answerKeyText: string | null): Promise<QuestionData[]> => {
+export const analyzeText = async (questionText: string, answerKeyText: string | null, bookId: string = "book"): Promise<QuestionData[]> => {
     // Legacy wrapper for direct analysis if needed
     // For now, let's keep it but ideally we use the 2-step flow.
     // We can simulate 2-step internally: extract map -> analyze deep.
@@ -188,7 +192,10 @@ export const analyzeText = async (questionText: string, answerKeyText: string | 
     if (!API_KEY) throw new Error('Gemini API Key is missing');
 
     const modelName = await getDynamicModel();
-    const model = genAI.getGenerativeModel({ model: modelName });
+    const model = genAI.getGenerativeModel({
+        model: modelName,
+        generationConfig: { responseMimeType: "application/json" }
+    });
 
     const prompt = `
     You are an expert English teacher.
@@ -207,7 +214,7 @@ export const analyzeText = async (questionText: string, answerKeyText: string | 
     **INSTRUCTIONS**:
     1. **Page Number**: Extract the page number for every question. If a question spans pages, use the starting page.
     2. **Concept [HIGH PRECISION]**: Identify the granular concept or skill. Be extremely specific (e.g., "past tense irregular verbs" instead of "past tense").
-    3. **itemId**: Generate a stable id like 'q1', 'q5'.
+    3. **itemId [STABLE ID]**: Generate a globally unique ID using the format '${bookId}_\${page}_\${question_number}' (e.g., '${bookId}_14_q1', '${bookId}_15_q2-a').
     4. **Answer**: Use the provided 'Answer Key Content' to find the correct answer. If not found, solve it yourself but mark it as tentative.
     5. **Type**: Classify into 'GRAMMAR', 'READING', 'VOCABULARY', 'LISTENING'.
     6. **Page Topic [NEW]**: Identify the overarching **Theme or Topic** of the passage on this page (e.g., "A Great Teacher (Helen Keller)", "The Solar System"). This is crucial for reports.
@@ -219,7 +226,7 @@ export const analyzeText = async (questionText: string, answerKeyText: string | 
       {
         "type": "GRAMMAR" | "READING" | "VOCABULARY",
         "question_number": "number or label like '1', 'A-1'",
-        "itemId": "stable unique id like 'q1', 'q3-a'",
+        "itemId": "${bookId}_14_q1",
         "question": "Question text...",
         "answer": "Correct answer",
         "options": ["Option A", "Option B", "Option C", "Option D"], (or null)
@@ -242,24 +249,23 @@ export const analyzeText = async (questionText: string, answerKeyText: string | 
     try {
         const result = await model.generateContent(prompt);
         const response = await result.response;
-        const textResult = response.text();
-
-        // Cleanup JSON markdown
-        const cleanedText = textResult.replace(/```json/g, '').replace(/```/g, '').trim();
-        return JSON.parse(cleanedText);
+        return JSON.parse(response.text());
     } catch (error) {
         console.error('Gemini Analysis Error:', error);
         throw new Error('Failed to analyze content with AI');
     }
 };
 
-export const analyzeImages = async (images: string[], answerKeyText: string | null = null): Promise<QuestionData[]> => {
+export const analyzeImages = async (images: string[], answerKeyText: string | null = null, bookId: string = "book"): Promise<QuestionData[]> => {
     if (!API_KEY) {
         throw new Error('Gemini API Key is missing');
     }
 
     const modelName = await getDynamicModel();
-    const model = genAI.getGenerativeModel({ model: modelName });
+    const model = genAI.getGenerativeModel({
+        model: modelName,
+        generationConfig: { responseMimeType: "application/json" }
+    });
 
     const prompt = `
     You are an expert English teacher.
@@ -267,7 +273,7 @@ export const analyzeImages = async (images: string[], answerKeyText: string | nu
     
     Target Sections:
     - Review Tests, Unit Tests, Chapter Tests
-    - Comprehensive Tests, Actual Tests
+    - Comprehensive Tests, Actual Tests 
 
     **REFERENCE DATA**:
     The user has provided an ANSWER KEY (text format) below. 
@@ -284,7 +290,7 @@ export const analyzeImages = async (images: string[], answerKeyText: string | nu
     **INSTRUCTIONS**:
     1. **Page Number**: Infer page number from the image content (look for page markers).
     2. **Concept [HIGH PRECISION]**: Identify the granular concept or reading skill. Provide the level of detail required for practice question matching.
-    3. **itemId**: Generate a stable id like 'q1', 'q5'.
+    3. **itemId [STABLE ID]**: Generate a globally unique ID using the format '${bookId}_\${page}_\${question_number}' (e.g., '${bookId}_14_q1', '${bookId}_15_q2-a').
     4. **Answer**: Solve the question yourself accurately (since answer key is not provided in images usually).
     5. **Type**: Classify into 'GRAMMAR', 'READING', 'VOCABULARY', 'LISTENING'.
     6. **Page Topic [NEW]**: Identify the overarching **Theme or Topic** of the passage on this page.
@@ -296,7 +302,7 @@ export const analyzeImages = async (images: string[], answerKeyText: string | nu
       {
         "type": "GRAMMAR" | "READING" | "VOCABULARY",
         "question_number": "number or label like '1', 'A-1'",
-        "itemId": "stable unique id like 'q1', 'q5'",
+        "itemId": "${bookId}_14_q1",
         "question": "Question text...",
         "answer": "Correct answer",
         "options": ["Option A", "Option B", "Option C", "Option D"], (or null)
@@ -318,10 +324,7 @@ export const analyzeImages = async (images: string[], answerKeyText: string | nu
 
         const result = await model.generateContent([prompt, ...imageParts]);
         const response = await result.response;
-        const textResult = response.text();
-
-        const cleanedText = textResult.replace(/```json/g, '').replace(/```/g, '').trim();
-        return JSON.parse(cleanedText);
+        return JSON.parse(response.text());
     } catch (error) {
         console.error('Gemini Vision Analysis Error:', error);
         throw new Error('Failed to analyze images with AI');
@@ -332,7 +335,10 @@ export const analyzeImages = async (images: string[], answerKeyText: string | nu
 export const regenerateExplanations = async (questions: QuestionData[]): Promise<QuestionData[]> => {
     if (!API_KEY) throw new Error('Gemini API Key is missing');
     const modelName = await getDynamicModel();
-    const model = genAI.getGenerativeModel({ model: modelName });
+    const model = genAI.getGenerativeModel({
+        model: modelName,
+        generationConfig: { responseMimeType: "application/json" }
+    });
 
     // Limit batch size to avoid token limits.
     const BATCH_SIZE = 10;
@@ -341,8 +347,8 @@ export const regenerateExplanations = async (questions: QuestionData[]): Promise
     for (let i = 0; i < questions.length; i += BATCH_SIZE) {
         const batch = questions.slice(i, i + BATCH_SIZE);
         // Minimal context for regeneration
-        const batchContent = JSON.stringify(batch.map((q, idx) => ({
-            id: idx,
+        const batchContent = JSON.stringify(batch.map(q => ({
+            itemId: q.itemId, // Use stable ID for matching
             question: q.question,
             answer: q.answer,
             options: q.options
@@ -363,7 +369,7 @@ export const regenerateExplanations = async (questions: QuestionData[]): Promise
         
         **OUTPUT FORMAT**:
         Return a JSON Array of objects with:
-        - "id": (must match input id)
+        - "itemId": (must match input itemId)
         - "explanation": (NEW detailed explanation in Korean)
         - "concept": (NEW specific concept)
         `;
@@ -371,12 +377,14 @@ export const regenerateExplanations = async (questions: QuestionData[]): Promise
         try {
             const result = await model.generateContent(prompt);
             const response = await result.response;
-            const text = response.text().replace(/```json/g, '').replace(/```/g, '').trim();
-            const analyzedBatch = JSON.parse(text);
+            const analyzedBatch = JSON.parse(response.text());
 
             // Merge back
-            batch.forEach((q, idx) => {
-                const analyzed = analyzedBatch.find((a: any) => a.id === idx);
+            batch.forEach((q) => {
+                const analyzed = Array.isArray(analyzedBatch)
+                    ? analyzedBatch.find((a: any) => a.itemId === q.itemId)
+                    : null;
+
                 if (analyzed) {
                     resultQuestions.push({
                         ...q,
@@ -425,7 +433,10 @@ export interface CategoryAnalysisData {
 export const generateLearningReport = async (data: ReportInputData): Promise<any> => {
     if (!API_KEY) throw new Error('Gemini API Key is missing');
     const modelName = await getDynamicModel();
-    const model = genAI.getGenerativeModel({ model: modelName });
+    const model = genAI.getGenerativeModel({
+        model: modelName,
+        generationConfig: { responseMimeType: "application/json" }
+    });
 
     const prompt = `
     You are an expert academic counselor at a premium English academy ("JEUS Academy").
@@ -484,8 +495,7 @@ export const generateLearningReport = async (data: ReportInputData): Promise<any
     try {
         const result = await model.generateContent(prompt);
         const response = await result.response;
-        const text = response.text().replace(/```json/g, '').replace(/```/g, '').trim();
-        return JSON.parse(text);
+        return JSON.parse(response.text());
     } catch (error) {
         console.error('Report Generation Failed:', error);
         throw new Error('Failed to generate report');
@@ -499,7 +509,10 @@ export const generateLearningReport = async (data: ReportInputData): Promise<any
 export const generateCategoryAnalysis = async (data: CategoryAnalysisData): Promise<any> => {
     if (!API_KEY) throw new Error('Gemini API Key is missing');
     const modelName = await getDynamicModel();
-    const model = genAI.getGenerativeModel({ model: modelName });
+    const model = genAI.getGenerativeModel({
+        model: modelName,
+        generationConfig: { responseMimeType: "application/json" }
+    });
 
     const prompt = `
     You are a specialized academic consultant for ${data.category} at JEUS Academy.
@@ -528,8 +541,7 @@ export const generateCategoryAnalysis = async (data: CategoryAnalysisData): Prom
     try {
         const result = await model.generateContent(prompt);
         const response = await result.response;
-        const text = response.text().replace(/```json/g, '').replace(/```/g, '').trim();
-        return JSON.parse(text);
+        return JSON.parse(response.text());
     } catch (error) {
         console.error(`Category analysis failed for ${data.category}:`, error);
         return {
@@ -568,10 +580,12 @@ export interface OptimizedReportInput {
 export const generateOptimizedReport = async (data: OptimizedReportInput): Promise<any> => {
     if (!API_KEY) throw new Error('Gemini API Key is missing');
 
-    // Use dynamic model discovery - it will prioritize Flash models automatically
     const modelName = await getDynamicModel();
     console.log(`[Optimized Report] Using model: ${modelName}`);
-    const model = genAI.getGenerativeModel({ model: modelName });
+    const model = genAI.getGenerativeModel({
+        model: modelName,
+        generationConfig: { responseMimeType: "application/json" }
+    });
 
     const grammarSection = data.grammarData ? `
     **문법(GRAMMAR)**:
@@ -621,14 +635,13 @@ ${readingSection}
 1. 모든 분석 내용은 반드시 **한국어(Korean)**로 작성하세요.
 2. 학습한 모든 단원/챕터명(themes)이 누락되지 않도록 **반드시 전체 목록을 반영**하여 요약하세요. (특정 단원 하나만 강조하지 말고, 전체 범위를 보여주세요)
 3. 독해(READING) 섹션의 지문 제목이 영어라도, 분석 내용(strengths, weaknesses, prescription)은 **반드시 한국어**로 작성하세요.
-4. JSON만 출력하세요 (마크다운 코드블록 없이).
+4. JSON만 출력하세요.
 5. 영어 단어나 문법 용어는 괄호 안에 병기할 수 있습니다. 예: "관계대명사(Relative Pronoun)"`;
 
     try {
         const result = await model.generateContent(prompt);
         const response = await result.response;
-        const text = response.text().replace(/```json/g, '').replace(/```/g, '').trim();
-        return JSON.parse(text);
+        return JSON.parse(response.text());
     } catch (error) {
         console.error('Optimized Report Generation Failed:', error);
         // Return template fallback

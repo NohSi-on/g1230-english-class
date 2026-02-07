@@ -10,7 +10,7 @@ interface AnalysisSetupModalProps {
 export function AnalysisSetupModal({ onClose, onStartAnalysis, loading }: AnalysisSetupModalProps) {
     const [questionFile, setQuestionFile] = useState<File | null>(null);
     const [answerFile, setAnswerFile] = useState<File | null>(null);
-    const [analysisMode, setAnalysisMode] = useState<'overwrite' | 'merge'>('overwrite');
+    const [analysisMode, setAnalysisMode] = useState<'overwrite' | 'merge'>('merge');
 
     // Page Range State
     const [usePageRange, setUsePageRange] = useState(false);
@@ -78,6 +78,12 @@ export function AnalysisSetupModal({ onClose, onStartAnalysis, loading }: Analys
                                 <p className="text-[10px] font-medium opacity-70">현재 내용 유지 및 병합</p>
                             </button>
                         </div>
+                        {analysisMode === 'overwrite' && (
+                            <div className="mt-3 p-2 bg-red-50 border border-red-100 rounded text-[11px] text-red-600 font-medium">
+                                ⚠️ 주의: '새로 만들기'는 현재 에디터의 모든 내용을 삭제하고 시작합니다.
+                                전체 교재 데이터를 유지하려면 '기존 문항에 추가'를 권장합니다.
+                            </div>
+                        )}
                     </div>
 
                     {/* Page Range Selection */}
