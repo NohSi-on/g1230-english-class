@@ -36,7 +36,7 @@ export function BookList() {
     };
 
     const handleDelete = async (book: Book) => {
-        if (!window.confirm(`'${book.title}' 교재를 삭제하시겠습니까 ? `)) return;
+        if (!window.confirm(`'${book.title}' 교재를 삭제하시겠습니까?`)) return;
 
         try {
             await deleteBook(book);
@@ -84,10 +84,10 @@ export function BookList() {
                     <button
                         key={tab.id}
                         onClick={() => setActiveTab(tab.id)}
-                        className={`px - 6 py - 3 text - sm font - medium border - b - 2 transition - colors ${activeTab === tab.id
+                        className={`px-6 py-3 text-sm font-medium border-b-2 transition-colors ${activeTab === tab.id
                             ? 'border-brand-600 text-brand-600'
                             : 'border-transparent text-slate-500 hover:text-slate-700'
-                            } `}
+                            }`}
                     >
                         {tab.label}
                     </button>
@@ -111,9 +111,9 @@ export function BookList() {
                     )}
                 </div>
             ) : (
-                <div className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-4 gap-6">
+                <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 xl:grid-cols-8 2xl:grid-cols-10 gap-3">
                     {filteredBooks.map((book) => (
-                        <div key={book.id} className="group bg-white rounded-xl shadow-sm hover:shadow-md transition-shadow border border-slate-100 overflow-hidden flex flex-col">
+                        <div key={book.id} className="group bg-white rounded-lg shadow-sm hover:shadow-md transition-shadow border border-slate-100 overflow-hidden flex flex-col">
                             <div className="aspect-[3/4] bg-slate-100 relative overflow-hidden">
                                 {book.cover_url ? (
                                     <img
@@ -123,76 +123,74 @@ export function BookList() {
                                     />
                                 ) : (
                                     <div className="w-full h-full flex items-center justify-center text-slate-400">
-                                        <BookIcon size={48} />
+                                        <BookIcon size={40} />
                                     </div>
                                 )}
                                 {role === 'admin' && (
-                                    <div className="absolute top-2 right-2">
+                                    <div className="absolute top-1.5 right-1.5">
                                         <button
                                             onClick={() => handleDelete(book)}
-                                            className="p-1.5 bg-white/90 text-red-600 rounded-full hover:bg-white shadow-sm transition-all"
+                                            className="p-1 bg-white/90 text-red-600 rounded-full hover:bg-white shadow-sm transition-all"
                                             title="삭제"
                                         >
-                                            <Trash2 size={16} />
+                                            <Trash2 size={14} />
                                         </button>
                                     </div>
                                 )}
-                                <div className="absolute top-2 left-2">
-                                    <span className="px-2 py-1 bg-black/60 text-white text-xs rounded backdrop-blur-sm">
+                                <div className="absolute top-1.5 left-1.5">
+                                    <span className="px-1.5 py-0.5 bg-black/60 text-white text-[9px] rounded backdrop-blur-sm">
                                         {book.category}
                                     </span>
                                 </div>
                             </div>
-                            <div className="p-4 flex-1 flex flex-col">
-                                <h3 className="font-bold text-slate-900 line-clamp-2 mb-1">{book.title}</h3>
-                                <div className="flex items-center gap-2 mb-4">
-                                    <span className="text-xs text-slate-400">
+                            <div className="p-2 flex-1 flex flex-col">
+                                <h3 className="font-bold text-slate-900 text-[11px] leading-tight line-clamp-2 mb-1 h-[2em]">{book.title}</h3>
+                                <div className="flex items-center justify-between mb-2">
+                                    <span className="text-[8px] text-slate-400">
                                         {new Date(book.created_at).toLocaleDateString()}
                                     </span>
                                     {book.target_grade && (
-                                        <span className="px-1.5 py-0.5 bg-slate-100 text-slate-600 text-xs rounded font-medium">
+                                        <span className="px-1 py-0.5 bg-slate-50 text-slate-500 text-[8px] rounded border border-slate-100">
                                             {book.target_grade}
                                         </span>
                                     )}
                                 </div>
 
-                                <div className="mt-auto flex gap-2">
+                                <div className="mt-auto flex flex-col gap-1">
                                     {role === 'admin' ? (
                                         <>
                                             <button
                                                 onClick={() => handleEdit(book)}
-                                                className="flex-1 py-2 text-sm text-slate-600 bg-slate-50 rounded hover:bg-slate-100 font-medium"
+                                                className="w-full py-1 text-[10px] text-slate-600 bg-slate-50 rounded hover:bg-slate-100 font-bold border border-slate-200 transition-colors"
                                             >
                                                 수정
                                             </button>
                                             <button
                                                 onClick={() => navigate(`/books/${book.id}/editor`)}
-                                                className="flex-1 py-2 text-sm text-red-600 bg-red-50 rounded hover:bg-red-100 font-medium"
+                                                className="w-full py-1.5 text-[10px] text-brand-600 bg-brand-50 rounded hover:bg-brand-100 font-bold border border-brand-100 transition-colors"
                                             >
                                                 관리(AI)
                                             </button>
                                         </>
                                     ) : (
-                                        <div className="flex-1 py-2 text-center text-sm text-slate-400 bg-slate-50 rounded font-medium italic">
+                                        <div className="w-full py-1 text-center text-[10px] text-slate-400 bg-slate-50 rounded font-medium italic">
                                             조회 전용
                                         </div>
                                     )}
-                                </div >
-                            </div >
-                        </div >
+                                </div>
+                            </div>
+                        </div>
                     ))}
-                </div >
+                </div>
             )}
 
-            {
-                isUploadOpen && (
-                    <BookUpload
-                        onClose={() => { setIsUploadOpen(false); setEditingBook(undefined); }}
-                        onSuccess={fetchBooks}
-                        initialData={editingBook}
-                    />
-                )
-            }
-        </div >
+            {isUploadOpen && (
+                <BookUpload
+                    onClose={() => { setIsUploadOpen(false); setEditingBook(undefined); }}
+                    onSuccess={fetchBooks}
+                    initialData={editingBook}
+                />
+            )}
+        </div>
     );
 }
