@@ -5,7 +5,6 @@ import SmartEditorPage from './pages/SmartEditorPage';
 import LoginPage from './pages/LoginPage';
 import AdminUserConfigs from './pages/AdminUserConfigs';
 import StudentsPage from './pages/StudentsPage';
-import GradingPage from './pages/GradingPage';
 import LearningPage from './pages/LearningPage';
 import ReportGeneratorPage from './pages/ReportGeneratorPage';
 import ReportViewPage from './pages/ReportViewPage';
@@ -40,11 +39,6 @@ function App() {
             </ProtectedRoute>
           } />
 
-          <Route path="/grading/:assessmentId" element={
-            <ProtectedRoute>
-              <GradingPage />
-            </ProtectedRoute>
-          } />
 
           {/* Report Generator Route - Protected */}
           <Route path="/reports/new" element={

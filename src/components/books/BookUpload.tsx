@@ -1,8 +1,11 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { X, Loader2 } from 'lucide-react';
 import { createBook, updateBook, uploadFile } from '../../services/bookService';
+import { getCategories, type Category } from '../../services/categoryService';
 import type { Book, BookCategory } from '../../types';
 import { CoverImageSelector } from './CoverImageSelector';
+
+const GRADES = ['초1', '초2', '초3', '초4', '초5', '초6', '중1', '중2', '중3', '고1', '고2', '고3'];
 
 interface BookUploadProps {
     onClose: () => void;
@@ -10,26 +13,36 @@ interface BookUploadProps {
     initialData?: Book; // If present, Edit Mode
 }
 
-const CATEGORIES: { value: BookCategory; label: string }[] = [
-    { value: 'GRAMMAR', label: '문법 (Grammar)' },
-    { value: 'READING', label: '독해 (Reading)' },
-    { value: 'WORD', label: '어휘 (Word)' },
-    { value: 'LISTENING', label: '듣기 (Listening)' },
-];
-
-const GRADES = ['초5', '초6', '중1', '중2', '중3', '고1', '고2'];
-
 export function BookUpload({ onClose, onSuccess, initialData }: BookUploadProps) {
     const [title, setTitle] = useState(initialData?.title || '');
-    const [category, setCategory] = useState<BookCategory>(initialData?.category || 'READING');
+    const [categories, setCategories] = useState<Category[]>([]);
+    const [category, setCategory] = useState<BookCategory>(initialData?.category || '');
     const [targetGrade, setTargetGrade] = useState(initialData?.target_grade || '중1');
     const [coverFile, setCoverFile] = useState<File | null>(null);
     const [coverUrlInput, setCoverUrlInput] = useState('');
     const [loading, setLoading] = useState(false);
+    const [loadingCats, setLoadingCats] = useState(true);
+
+    useEffect(() => {
+        const loadCats = async () => {
+            try {
+                const data = await getCategories();
+                setCategories(data);
+                if (!initialData && data.length > 0) {
+                    setCategory(data[0].name);
+                }
+            } catch (err) {
+                console.error('Failed to load categories:', err);
+            } finally {
+                setLoadingCats(false);
+            }
+        };
+        loadCats();
+    }, [initialData]);
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
-        if (!title) return;
+        if (!title || !category) return;
 
         try {
             setLoading(true);
@@ -114,12 +127,23 @@ export function BookUpload({ onClose, onSuccess, initialData }: BookUploadProps)
                                 <select
                                     value={category}
                                     onChange={(e) => setCategory(e.target.value as BookCategory)}
-                                    className="w-full px-3 py-2 border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-red-500"
+                                    className="w-full px-3 py-2 border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-red-500 disabled:opacity-50"
+                                    disabled={loadingCats}
+                                    required
                                 >
-                                    {CATEGORIES.map((cat) => (
-                                        <option key={cat.value} value={cat.value}>{cat.label}</option>
-                                    ))}
+                                    {loadingCats ? (
+                                        <option>로딩 중...</option>
+                                    ) : categories.length === 0 ? (
+                                        <option value="">카테고리 없음</option>
+                                    ) : (
+                                        categories.map((cat) => (
+                                            <option key={cat.id} value={cat.name}>{cat.name}</option>
+                                        ))
+                                    )}
                                 </select>
+                                {categories.length === 0 && !loadingCats && (
+                                    <p className="text-[10px] text-red-500 mt-1">먼저 카테고리를 생성해 주세요.</p>
+                                )}
                             </div>
                             <div>
                                 <label className="block text-sm font-medium text-slate-700 mb-1">
@@ -156,7 +180,7 @@ export function BookUpload({ onClose, onSuccess, initialData }: BookUploadProps)
 
                     <button
                         type="submit"
-                        disabled={loading || !title}
+                        disabled={loading || !title || !category}
                         className="w-full py-3 bg-red-600 text-white rounded-lg font-bold hover:bg-red-700 transition-colors flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed mt-6"
                     >
                         {loading && <Loader2 className="animate-spin" size={20} />}

@@ -1,7 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { supabase } from '../lib/supabase';
 import { BookOpen, Search, X, FolderPlus, Folder, ChevronRight, UserPlus, Users, ChevronLeft, Trash2, CheckCircle, XCircle } from 'lucide-react';
-// import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
 
 interface Class {
@@ -56,9 +55,7 @@ interface QuestionBlock {
 }
 
 export default function LearningPage() {
-    // const navigate = useNavigate();
     const { user, role } = useAuth();
-
     const [viewMode, setViewMode] = useState<'list' | 'detail'>('list');
     const [selectedClass, setSelectedClass] = useState<Class | null>(null);
 
@@ -547,49 +544,49 @@ export default function LearningPage() {
     const currentItems = allBookItems.filter(i => i.page === activePage);
 
     return (
-        <div className="max-w-7xl mx-auto p-8 h-[calc(100vh-4rem)] flex flex-col">
-            <div className="flex items-center gap-4 mb-6">
-                <button onClick={() => setViewMode('list')} className="p-2 hover:bg-slate-200 rounded-full text-slate-500">
-                    <ChevronLeft size={24} />
+        <div className="w-full h-full flex flex-col px-6 pt-2 pb-6">
+            <div className="flex items-center gap-4 mb-2 shrink-0">
+                <button onClick={() => setViewMode('list')} className="p-1.5 hover:bg-slate-200 rounded-full text-slate-500">
+                    <ChevronLeft size={20} />
                 </button>
-                <h1 className="text-2xl font-bold text-slate-900 flex items-center gap-2">
-                    <Folder className="text-indigo-600" />
+                <h1 className="text-xl font-bold text-slate-900 flex items-center gap-2">
+                    <Folder className="text-indigo-600" size={20} />
                     {selectedClass?.name}
                 </h1>
-                <span className="bg-indigo-100 text-indigo-700 px-3 py-1 rounded-full text-xs font-bold">
+                <span className="bg-indigo-100 text-indigo-700 px-2 py-0.5 rounded-full text-[10px] font-bold">
                     {classStudents.length}명
                 </span>
             </div>
 
-            <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 flex-1 min-h-0">
-                {/* Left Col */}
-                <div className="lg:col-span-1 flex flex-col gap-6 overflow-hidden">
+            <div className="flex flex-col lg:flex-row gap-4 flex-1 min-h-0">
+                {/* Left Col: Sidebar (Fixed Width) */}
+                <div className="lg:w-[240px] shrink-0 flex flex-col gap-4 overflow-hidden">
                     <div className="bg-white rounded-2xl shadow-sm border border-slate-200 flex flex-col flex-1 min-h-0">
-                        <div className="p-4 border-b border-slate-100 flex justify-between items-center">
-                            <h3 className="font-bold text-slate-800 flex items-center gap-2">
-                                <Users size={18} /> 학생 목록
+                        <div className="p-2 border-b border-slate-100 flex justify-between items-center bg-slate-50/50">
+                            <h3 className="font-bold text-slate-800 text-xs flex items-center gap-2">
+                                <Users size={14} /> 학생 목록
                             </h3>
-                            <button onClick={openAddStudentModal} className="text-indigo-600 hover:bg-indigo-50 p-1.5 rounded-lg">
-                                <UserPlus size={18} />
+                            <button onClick={openAddStudentModal} className="text-indigo-600 hover:bg-indigo-50 p-1 rounded-lg">
+                                <UserPlus size={14} />
                             </button>
                         </div>
-                        <div className="overflow-y-auto flex-1 p-2">
+                        <div className="overflow-y-auto flex-1 p-1 custom-scrollbar">
                             {classStudents.map(student => (
                                 <div
                                     key={student.id}
                                     onClick={() => setActiveStudentId(student.id)}
-                                    className={`flex items-center justify-between p-3 rounded-xl transition-colors group cursor-pointer ${activeStudentId === student.id
-                                        ? 'bg-indigo-50 border-2 border-indigo-500'
-                                        : 'hover:bg-slate-50 border-2 border-transparent'
+                                    className={`flex items-center justify-between px-2 py-1.5 rounded-lg transition-colors group cursor-pointer border-2 mb-1 ${activeStudentId === student.id
+                                        ? 'bg-indigo-50 border-indigo-500'
+                                        : 'hover:bg-slate-50 border-transparent'
                                         }`}
                                 >
-                                    <div className="flex items-center gap-3">
-                                        <div className="w-8 h-8 bg-slate-100 rounded-full flex items-center justify-center font-bold text-slate-600 text-sm">
+                                    <div className="flex items-center gap-2">
+                                        <div className="w-6 h-6 bg-slate-100 rounded-full flex items-center justify-center font-bold text-slate-600 text-[9px]">
                                             {student.name[0]}
                                         </div>
                                         <div>
-                                            <div className="font-bold text-slate-900 text-sm">{student.name}</div>
-                                            <div className="text-xs text-slate-500">{student.grade}</div>
+                                            <div className="font-bold text-slate-900 text-xs">{student.name}</div>
+                                            <div className="text-[9px] text-slate-400">{student.grade}</div>
                                         </div>
                                     </div>
                                     <button
@@ -597,38 +594,54 @@ export default function LearningPage() {
                                             e.stopPropagation();
                                             handleRemoveStudentFromClass(student.id);
                                         }}
-                                        className="text-slate-400 hover:text-red-500 opacity-0 group-hover:opacity-100 transition-opacity p-2"
+                                        className="text-slate-300 hover:text-red-500 opacity-0 group-hover:opacity-100 transition-opacity p-0.5"
                                         title="반에서 제외"
                                     >
-                                        <Trash2 size={16} />
+                                        <Trash2 size={12} />
                                     </button>
                                 </div>
                             ))}
-                            {classStudents.length === 0 && (
-                                <p className="text-center text-slate-400 text-sm py-8">학생을 추가해주세요.</p>
-                            )}
                         </div>
                     </div>
 
-                    <div className="bg-white rounded-2xl shadow-sm border border-slate-200 flex flex-col h-1/3 min-h-[200px]">
-                        <div className="p-4 border-b border-slate-100 flex justify-between items-center">
-                            <h3 className="font-bold text-slate-800 flex items-center gap-2">
-                                <BookOpen size={18} /> 교재 관리
+                    <div className="bg-white rounded-2xl shadow-sm border border-slate-200 flex flex-col shrink-0 min-h-0 max-h-[40%]">
+                        <div className="p-3 border-b border-slate-100 flex justify-between items-center bg-slate-50/50">
+                            <h3 className="font-bold text-slate-800 text-sm flex items-center gap-2">
+                                <BookOpen size={16} /> 교재 관리
                             </h3>
-                            <button onClick={openAddBookModal} className="text-indigo-600 hover:bg-indigo-50 p-1.5 rounded-lg">
-                                <BookOpen size={18} />
+                            <button onClick={openAddBookModal} className="text-indigo-600 hover:bg-indigo-50 p-1 rounded-lg">
+                                <FolderPlus size={16} />
                             </button>
                         </div>
-                        <div className="overflow-y-auto flex-1 p-2">
+                        <div className="overflow-y-auto flex-1 p-1">
                             {classBooks.map(book => (
-                                <div key={book.id} onClick={() => setExpandedBookId(book.id === expandedBookId ? null : book.id)} className={`p-3 rounded-xl border mb-2 cursor-pointer transition-all group ${expandedBookId === book.id ? 'border-indigo-500 bg-indigo-50' : 'border-slate-100 hover:border-indigo-200'}`}>
-                                    <div className="flex justify-between items-center">
-                                        <span className="font-bold text-sm text-slate-800 line-clamp-1 flex-1">{book.title}</span>
-                                        <div className="flex items-center gap-2">
-                                            <button onClick={(e) => handleRemoveBookFromClass(book.id, e)} className="text-slate-400 hover:text-red-500 opacity-0 group-hover:opacity-100 transition-opacity p-1" title="교재 삭제">
-                                                <Trash2 size={14} />
-                                            </button>
-                                            <ChevronRight size={16} className={`text-slate-400 transition-transform ${expandedBookId === book.id ? 'rotate-90' : ''}`} />
+                                <div
+                                    key={book.id}
+                                    onClick={() => setExpandedBookId(expandedBookId === book.id ? null : book.id)}
+                                    className={`flex items-center justify-between p-2 rounded-lg transition-colors group border-2 cursor-pointer ${expandedBookId === book.id
+                                        ? 'bg-indigo-50 border-indigo-500'
+                                        : 'hover:bg-slate-50 border-transparent'
+                                        }`}
+                                >
+                                    <div className="flex items-center gap-2 truncate">
+                                        <div className={`w-7 h-7 rounded-lg flex items-center justify-center shrink-0 ${expandedBookId === book.id ? 'bg-indigo-600 text-white' : 'bg-indigo-50 text-indigo-600'}`}>
+                                            <BookOpen size={14} />
+                                        </div>
+                                        <span className={`text-xs font-bold truncate ${expandedBookId === book.id ? 'text-indigo-900' : 'text-slate-700'}`}>{book.title}</span>
+                                    </div>
+                                    <div className="flex items-center">
+                                        <button
+                                            onClick={(e) => {
+                                                e.stopPropagation();
+                                                handleRemoveBookFromClass(book.id, e);
+                                            }}
+                                            className="text-slate-300 hover:text-red-500 opacity-0 group-hover:opacity-100 transition-opacity p-1"
+                                            title="교재 해제"
+                                        >
+                                            <Trash2 size={14} />
+                                        </button>
+                                        <div className={`p-1 rounded-lg transition-colors ${expandedBookId === book.id ? 'text-indigo-600' : 'text-slate-400'}`}>
+                                            <ChevronRight size={14} className={`transition-transform ${expandedBookId === book.id ? 'rotate-90' : ''}`} />
                                         </div>
                                     </div>
                                 </div>
@@ -637,8 +650,8 @@ export default function LearningPage() {
                     </div>
                 </div>
 
-                {/* Right Col: Grading Area */}
-                <div className="lg:col-span-2 bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden flex flex-col h-[600px] lg:h-auto">
+                {/* Right Col: Grading Area (Fluid Expansion) */}
+                <div className="flex-1 bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden flex flex-col h-[600px] lg:h-auto">
                     <div className="p-4 border-b border-slate-100 flex items-center justify-between bg-white shrink-0">
                         <h2 className="text-lg font-bold text-slate-900 truncate">
                             {expandedBookId ? (
@@ -704,15 +717,15 @@ export default function LearningPage() {
                                                 </div>
                                                 <div className="flex gap-2">
                                                     <button onClick={() => handleBatchGrade('CORRECT')} className="px-3 py-1.5 rounded-lg text-sm font-bold border border-green-200 text-green-600 hover:bg-green-50 flex items-center gap-1">
-                                                        <CheckCircle size={16} /> 미채점 전체 정답
+                                                        <CheckCircle size={16} /> 전체 O
                                                     </button>
                                                     <button onClick={() => handleBatchGrade('WRONG')} className="px-3 py-1.5 rounded-lg text-sm font-bold border border-red-200 text-red-600 hover:bg-red-50 flex items-center gap-1">
-                                                        <XCircle size={16} /> 미채점 전체 오답
+                                                        <XCircle size={16} /> 전체 X
                                                     </button>
                                                 </div>
                                             </div>
 
-                                            <div className="p-6 space-y-2">
+                                            <div className="p-6 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-2 xl:grid-cols-3 gap-4">
                                                 {currentItems.map((item, index) => {
                                                     const uniqueId = `${item.blockId}_${item.question_number}`;
                                                     const renderKey = `${uniqueId}_${index}`;
@@ -720,27 +733,44 @@ export default function LearningPage() {
                                                     const activeStudent = classStudents.find(s => s.id === activeStudentId);
                                                     const assessment = activeStudent?.assessments?.find(a => a.book_id === expandedBookId);
 
-                                                    // [STABLE MATCH] Strict match only - prevents cross-page pollution (Phantom Grading)
                                                     const statusData = assessment?.details?.answers?.[uniqueId];
                                                     const status = (statusData && typeof statusData === 'object') ? (statusData as any).status : statusData;
 
+                                                    const isNumeric = /^\d+$/.test(item.answer || '');
+
                                                     return (
-                                                        <div key={renderKey} className={`flex items-center justify-between p-4 rounded-xl border transition-all hover:shadow-sm ${status === 'CORRECT' ? 'bg-green-50/50 border-green-200' : status === 'WRONG' ? 'bg-red-50/50 border-red-200' : 'bg-white border-slate-100'}`}>
-                                                            <div className="flex items-center gap-4">
-                                                                <div className="w-8 h-8 rounded-full bg-slate-100 flex items-center justify-center font-bold text-slate-600 text-sm">
-                                                                    {item.question_number}
-                                                                </div>
-                                                                <div className="text-slate-400 text-sm italic">
-                                                                    문항 {item.question_number}
+                                                        <div key={renderKey} className="flex flex-col p-3 rounded-xl border border-slate-100 bg-white hover:border-slate-200 transition-all group shadow-sm">
+                                                            <div className="flex items-center justify-between mb-2">
+                                                                <div className="flex items-center gap-2">
+                                                                    <div className="w-7 h-7 rounded-lg bg-slate-100 flex items-center justify-center font-black text-xs text-slate-500">
+                                                                        {item.question_number}
+                                                                    </div>
+                                                                    <div className={`font-black tracking-tight ${isNumeric ? 'text-2xl text-slate-700' : 'text-sm text-slate-500'}`}>
+                                                                        {item.answer}
+                                                                    </div>
                                                                 </div>
                                                             </div>
 
-                                                            <div className="flex gap-2">
-                                                                <button disabled={!activeStudentId} onClick={() => activeStudentId && handleGrade(activeStudentId, uniqueId, 'CORRECT')} className={`w-10 h-10 rounded-full flex items-center justify-center transition-all ${status === 'CORRECT' ? 'bg-green-500 text-white shadow-md scale-110' : 'bg-slate-100 text-slate-300 hover:bg-green-100 hover:text-green-500'}`}>
-                                                                    <CheckCircle size={20} />
+                                                            <div className="flex gap-1.5">
+                                                                <button
+                                                                    disabled={!activeStudentId}
+                                                                    onClick={() => activeStudentId && handleGrade(activeStudentId, uniqueId, 'CORRECT')}
+                                                                    className={`flex-1 h-9 rounded-lg flex items-center justify-center transition-all font-black text-base ${status === 'CORRECT'
+                                                                        ? 'bg-green-500 text-white shadow-sm'
+                                                                        : 'bg-slate-50 text-slate-300 hover:bg-green-50 hover:text-green-500'
+                                                                        }`}
+                                                                >
+                                                                    O
                                                                 </button>
-                                                                <button disabled={!activeStudentId} onClick={() => activeStudentId && handleGrade(activeStudentId, uniqueId, 'WRONG')} className={`w-10 h-10 rounded-full flex items-center justify-center transition-all ${status === 'WRONG' ? 'bg-red-500 text-white shadow-md scale-110' : 'bg-slate-100 text-slate-300 hover:bg-red-100 hover:text-red-500'}`}>
-                                                                    <XCircle size={20} />
+                                                                <button
+                                                                    disabled={!activeStudentId}
+                                                                    onClick={() => activeStudentId && handleGrade(activeStudentId, uniqueId, 'WRONG')}
+                                                                    className={`flex-1 h-9 rounded-lg flex items-center justify-center transition-all font-black text-base ${status === 'WRONG'
+                                                                        ? 'bg-red-500 text-white shadow-sm'
+                                                                        : 'bg-slate-50 text-slate-300 hover:bg-red-50 hover:text-red-500'
+                                                                        }`}
+                                                                >
+                                                                    X
                                                                 </button>
                                                             </div>
                                                         </div>
