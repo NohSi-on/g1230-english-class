@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Plus, Book as BookIcon, Trash2, Settings } from 'lucide-react';
-import type { Book, BookCategory } from '../../types';
+import type { Book } from '../../types';
 import { getBooks, deleteBook } from '../../services/bookService';
 import { getCategories, type Category } from '../../services/categoryService';
 import { BookUpload } from './BookUpload';
