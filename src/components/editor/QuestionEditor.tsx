@@ -40,15 +40,136 @@ function PageHeaderInput({ value, onChange }: { value: number, onChange: (val: n
     );
 }
 
+interface Conflict {
+    index: number;
+    field: 'page' | 'question_number';
+    proposedValue: string | number;
+    targetId: string;
+    duplicateAt: number;
+}
+
+function ConflictResolutionModal({
+    conflict,
+    onResolve
+}: {
+    conflict: Conflict,
+    onResolve: (action: 'overwrite' | 'rename' | 'cancel') => void
+}) {
+    return (
+        <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/50 backdrop-blur-sm p-4">
+            <div className="bg-white rounded-xl shadow-2xl max-w-md w-full overflow-hidden border border-slate-200 animate-in fade-in zoom-in duration-200">
+                <div className="p-6">
+                    <div className="w-12 h-12 bg-amber-100 rounded-full flex items-center justify-center mb-4 mx-auto">
+                        <AlertCircle size={24} className="text-amber-600" />
+                    </div>
+                    <h3 className="text-lg font-bold text-slate-900 text-center mb-2">문항 번호 중복 감지</h3>
+                    <p className="text-sm text-slate-600 text-center mb-6">
+                        이동하려는 위치(<span className="font-bold text-indigo-600">ID: {conflict.targetId}</span>)에 이미 다른 문항이 존재합니다. 어떻게 처리할까요?
+                    </p>
+
+                    <div className="space-y-3">
+                        <button
+                            onClick={() => onResolve('rename')}
+                            className="w-full p-4 text-left border border-slate-200 rounded-xl hover:border-indigo-500 hover:bg-indigo-50 transition-all group"
+                        >
+                            <div className="font-bold text-slate-800 group-hover:text-indigo-700">이름 바꿔 유지 (권장)</div>
+                            <p className="text-xs text-slate-500">번호 뒤에 접미사를 붙여 두 문항 모두 유지합니다.</p>
+                        </button>
+
+                        <button
+                            onClick={() => onResolve('overwrite')}
+                            className="w-full p-4 text-left border border-slate-200 rounded-xl hover:border-red-500 hover:bg-red-50 transition-all group"
+                        >
+                            <div className="font-bold text-slate-800 group-hover:text-red-700">기존 문항 덮어쓰기</div>
+                            <p className="text-xs text-slate-500 italic">기존에 있던 문항이 에디터에서 사라집니다.</p>
+                        </button>
+                    </div>
+                </div>
+
+                <div className="p-4 bg-slate-50 border-t border-slate-100 flex justify-end">
+                    <button
+                        onClick={() => onResolve('cancel')}
+                        className="px-4 py-2 text-sm font-medium text-slate-600 hover:text-slate-800 transition-colors"
+                    >
+                        수정 취소
+                    </button>
+                </div>
+            </div>
+        </div>
+    );
+}
+
+interface PageConflict {
+    oldPage: number;
+    newPage: number;
+    collidingNumbers: string[];
+}
+
+function PageConflictModal({
+    conflict,
+    onResolve
+}: {
+    conflict: PageConflict,
+    onResolve: (action: 'overwrite' | 'rename' | 'cancel') => void
+}) {
+    return (
+        <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/50 backdrop-blur-sm p-4">
+            <div className="bg-white rounded-xl shadow-2xl max-w-md w-full overflow-hidden border border-slate-200 animate-in fade-in zoom-in duration-200">
+                <div className="p-6">
+                    <div className="w-12 h-12 bg-indigo-100 rounded-full flex items-center justify-center mb-4 mx-auto">
+                        <Layers size={24} className="text-indigo-600" />
+                    </div>
+                    <h3 className="text-lg font-bold text-slate-900 text-center mb-2">페이지 이동 충돌 감지</h3>
+                    <p className="text-sm text-slate-600 text-center mb-4">
+                        <span className="font-bold text-indigo-600">{conflict.oldPage}페이지</span>를 <span className="font-bold text-indigo-600">{conflict.newPage}페이지</span>로 이동하려고 하나, 다음 문항 번호가 이미 새로운 페이지에 존재합니다:
+                    </p>
+                    <div className="bg-slate-50 p-2 rounded border border-slate-100 mb-6 text-xs text-slate-500 font-mono text-center">
+                        {conflict.collidingNumbers.join(', ')}
+                    </div>
+
+                    <div className="space-y-3">
+                        <button
+                            onClick={() => onResolve('rename')}
+                            className="w-full p-4 text-left border border-slate-200 rounded-xl hover:border-indigo-500 hover:bg-indigo-50 transition-all group"
+                        >
+                            <div className="font-bold text-slate-800 group-hover:text-indigo-700">중복 문항 번호 변경 (권장)</div>
+                            <p className="text-xs text-slate-500">중복된 번호 뒤에 (1), (2)를 붙여 모두 이동시킵니다.</p>
+                        </button>
+
+                        <button
+                            onClick={() => onResolve('overwrite')}
+                            className="w-full p-4 text-left border border-slate-200 rounded-xl hover:border-red-500 hover:bg-red-50 transition-all group"
+                        >
+                            <div className="font-bold text-slate-800 group-hover:text-red-700">대상 페이지의 문항 덮어쓰기</div>
+                            <p className="text-xs text-slate-500">이동하려는 위치에 이미 있던 문항들을 삭제합니다.</p>
+                        </button>
+                    </div>
+                </div>
+
+                <div className="p-4 bg-slate-50 border-t border-slate-100 flex justify-end">
+                    <button
+                        onClick={() => onResolve('cancel')}
+                        className="px-4 py-2 text-sm font-medium text-slate-600 hover:text-slate-800 transition-colors"
+                    >
+                        이동 취소
+                    </button>
+                </div>
+            </div>
+        </div>
+    );
+}
+
 export function QuestionEditor({ questions: initialQuestions, onSave, onRegenerate, onCancel }: QuestionEditorProps) {
     const [questions, setQuestions] = useState<QuestionData[]>(initialQuestions);
+    const [conflict, setConflict] = useState<Conflict | null>(null);
+    const [pageConflict, setPageConflict] = useState<PageConflict | null>(null);
 
     useEffect(() => {
         console.log('[QuestionEditor] Received props.questions:', initialQuestions?.length);
         setQuestions(initialQuestions);
     }, [initialQuestions]);
 
-    const handleUpdate = (index: number, field: keyof QuestionData, value: any) => {
+    const applyUpdate = (index: number, field: keyof QuestionData, value: any) => {
         const newQuestions = [...questions];
         const updatedItem = { ...newQuestions[index], [field]: value };
 
@@ -61,6 +182,58 @@ export function QuestionEditor({ questions: initialQuestions, onSave, onRegenera
 
         newQuestions[index] = updatedItem;
         setQuestions(newQuestions);
+    };
+
+    const handleUpdate = (index: number, field: keyof QuestionData, value: any) => {
+        const item = questions[index];
+
+        if (field === 'page' || field === 'question_number') {
+            const p = field === 'page' ? (value as number) : (item.page || 0);
+            const n = field === 'question_number' ? (value as string) : (item.question_number || '0');
+            const targetId = `${p}_${n}`;
+
+            const duplicateIndex = questions.findIndex((q, i) => i !== index && q.itemId === targetId);
+            if (duplicateIndex > -1) {
+                setConflict({ index, field: field as 'page' | 'question_number', proposedValue: value, targetId, duplicateAt: duplicateIndex });
+                return;
+            }
+        }
+
+        applyUpdate(index, field, value);
+    };
+
+    const resolveConflict = (action: 'overwrite' | 'rename' | 'cancel') => {
+        if (!conflict) return;
+        const { index, field, proposedValue, duplicateAt } = conflict;
+
+        if (action === 'overwrite') {
+            const filtered = questions.filter((_, i) => i !== duplicateAt);
+            const newIndex = duplicateAt < index ? index - 1 : index;
+            const newQuestions = [...filtered];
+            const item = newQuestions[newIndex];
+            const updatedItem = { ...item, [field]: proposedValue };
+            const p = updatedItem.page || 0;
+            const n = updatedItem.question_number || '0';
+            updatedItem.itemId = `${p}_${n}`;
+            newQuestions[newIndex] = updatedItem;
+            setQuestions(newQuestions);
+        } else if (action === 'rename') {
+            const item = questions[index];
+            const p = field === 'page' ? (proposedValue as number) : (item.page || 0);
+            const baseN = field === 'question_number' ? (proposedValue as string) : (item.question_number || '0');
+            let uniqueN = baseN;
+            let targetId = `${p}_${uniqueN}`;
+            let counter = 1;
+            while (questions.some((q, i) => i !== index && q.itemId === targetId)) {
+                uniqueN = `${baseN}(${counter})`;
+                targetId = `${p}_${uniqueN}`;
+                counter++;
+            }
+            const newQuestions = [...questions];
+            newQuestions[index] = { ...item, page: p, question_number: uniqueN, itemId: targetId };
+            setQuestions(newQuestions);
+        }
+        setConflict(null);
     };
 
     const handleDelete = (index: number) => {
@@ -132,24 +305,64 @@ export function QuestionEditor({ questions: initialQuestions, onSave, onRegenera
 
     const sortedPages = Object.keys(groupedQuestions).map(Number).sort((a, b) => a - b);
 
+    const applyPageMove = (oldPage: number, newPage: number, collisionAction: 'overwrite' | 'rename' | 'none') => {
+        let destQuestions = questions.filter(q => (q.page || 0) === newPage);
+        let srcQuestions = questions.filter(q => (q.page || 0) === oldPage);
+        let otherQuestions = questions.filter(q => (q.page || 0) !== oldPage && (q.page || 0) !== newPage);
+
+        if (collisionAction === 'overwrite') {
+            const srcNums = new Set(srcQuestions.map(q => q.question_number || '0'));
+            destQuestions = destQuestions.filter(q => !srcNums.has(q.question_number || '0'));
+        }
+
+        const movedQuestions: QuestionData[] = [];
+        srcQuestions.forEach(q => {
+            let n = q.question_number || '0';
+            if (collisionAction === 'rename') {
+                const baseN = n;
+                if (destQuestions.some(d => (d.question_number || '0') === n)) {
+                    let counter = 1;
+                    while (destQuestions.some(d => (d.question_number || '0') === `${baseN}(${counter})`) || movedQuestions.some(m => m.question_number === `${baseN}(${counter})`)) {
+                        counter++;
+                    }
+                    n = `${baseN}(${counter})`;
+                }
+            }
+            movedQuestions.push({
+                ...q,
+                page: newPage,
+                itemId: `${newPage}_${n}`,
+                question_number: n
+            });
+        });
+
+        setQuestions([...otherQuestions, ...destQuestions, ...movedQuestions]);
+    };
+
+    const resolvePageConflict = (action: 'overwrite' | 'rename' | 'cancel') => {
+        if (!pageConflict) return;
+        if (action !== 'cancel') {
+            applyPageMove(pageConflict.oldPage, pageConflict.newPage, action);
+        }
+        setPageConflict(null);
+    };
+
     const handlePageHeaderChange = (oldPageNum: number, newPageNum: number) => {
         if (oldPageNum === newPageNum) return;
 
-        const newQuestions = questions.map(q => {
-            const currentP = q.page || 0;
-            const qNum = q.question_number || '0';
+        const itemsToMove = questions.filter(q => (q.page || 0) === oldPageNum);
+        const itemsInDest = questions.filter(q => (q.page || 0) === newPageNum);
 
-            if (currentP === oldPageNum) {
-                return {
-                    ...q,
-                    page: newPageNum,
-                    itemId: `${newPageNum}_${qNum}`
-                };
-            }
-            return q;
-        });
+        const collidingNumbers = itemsToMove
+            .filter(src => itemsInDest.some(dest => (dest.question_number || '0') === (src.question_number || '0')))
+            .map(q => q.question_number || '0');
 
-        setQuestions(newQuestions);
+        if (collidingNumbers.length > 0) {
+            setPageConflict({ oldPage: oldPageNum, newPage: newPageNum, collidingNumbers });
+            return;
+        }
+
+        applyPageMove(oldPageNum, newPageNum, 'none');
     };
 
     const handlePageTopicChange = (pageNum: number, newTopic: string) => {
@@ -182,6 +395,18 @@ export function QuestionEditor({ questions: initialQuestions, onSave, onRegenera
 
     return (
         <div className="bg-white h-full flex flex-col">
+            {conflict && (
+                <ConflictResolutionModal
+                    conflict={conflict}
+                    onResolve={resolveConflict}
+                />
+            )}
+            {pageConflict && (
+                <PageConflictModal
+                    conflict={pageConflict}
+                    onResolve={resolvePageConflict}
+                />
+            )}
             {/* Header */}
             <div className="p-4 border-b border-slate-200 flex items-center justify-between bg-slate-50">
                 <div>
