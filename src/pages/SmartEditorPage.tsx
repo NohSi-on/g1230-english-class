@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useCallback } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { ArrowLeft, Bot, Loader2 } from 'lucide-react';
 import { AnalysisSetupModal } from '../components/editor/AnalysisSetupModal';
@@ -210,7 +210,7 @@ export default function SmartEditorPage() {
         }
     };
 
-    const handleRegenerateExplanations = async (currentQuestions: QuestionData[]) => {
+    const handleRegenerateExplanations = useCallback(async (currentQuestions: QuestionData[]) => {
         try {
             setAnalyzing(true);
             setStatusMessage('정답 기반 해설 재생성 중...');
@@ -229,7 +229,7 @@ export default function SmartEditorPage() {
     };
 
     // 2. Final Save from Review Editor
-    const handleSaveQuestions = async (finalQuestions: QuestionData[]) => {
+    const handleSaveQuestions = useCallback(async (finalQuestions: QuestionData[]) => {
         try {
             if (!finalQuestions || finalQuestions.length === 0) {
                 alert('저장할 문항이 없습니다.');
@@ -291,7 +291,16 @@ export default function SmartEditorPage() {
         }
     };
 
-    return (
+}, [bookId]);
+
+const handleCancel = useCallback(() => {
+    if (confirm('모든 문항을 지우고 초기화하시겠습니까?')) {
+        setExtractedQuestions([]);
+    }
+}, []);
+
+return (
+    <ErrorBoundary componentName="SmartEditorPage">
         <div className="flex flex-col h-screen bg-slate-50">
             {isAnalysisModalOpen && (
                 <AnalysisSetupModal
@@ -318,7 +327,7 @@ export default function SmartEditorPage() {
                 {/* Header Actions */}
                 <div className="flex items-center gap-2">
                     {analyzing && (
-                        <span className="text-sm text-brand-600 font-bold animate-pulse mr-4">
+                        <span className="text-sm text-brand-600 font-bold mr-4" translate="no">
                             {statusMessage || '분석 중...'}
                         </span>
                     )}
@@ -339,20 +348,16 @@ export default function SmartEditorPage() {
             {/* Main Content: Full Screen Editor */}
             <div className="flex-1 overflow-hidden bg-slate-100 p-4">
                 <div className="max-w-5xl mx-auto h-full shadow-xl rounded-xl overflow-hidden bg-white">
-                    <ErrorBoundary componentName="QuestionEditor">
-                        <QuestionEditor
-                            questions={extractedQuestions}
-                            onSave={handleSaveQuestions}
-                            onRegenerate={handleRegenerateExplanations}
-                            onCancel={() => {
-                                if (confirm('모든 문항을 지우고 초기화하시겠습니까?')) {
-                                    setExtractedQuestions([]);
-                                }
-                            }}
-                        />
-                    </ErrorBoundary>
+                    <QuestionEditor
+                        questions={extractedQuestions}
+                        onSave={handleSaveQuestions}
+                        onRegenerate={handleRegenerateExplanations}
+                        onCancel={handleCancel}
+                    />
                 </div>
             </div>
         </div>
+    </ErrorBoundary>
+);
     );
 }
