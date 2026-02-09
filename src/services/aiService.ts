@@ -1,4 +1,5 @@
 import { GoogleGenerativeAI } from '@google/generative-ai';
+import type { VocabWord } from '../types';
 
 const API_KEY = import.meta.env.VITE_GEMINI_API_KEY || '';
 const genAI = new GoogleGenerativeAI(API_KEY);
@@ -176,10 +177,20 @@ export const analyzeDeepWithVerifiedAnswers = async (questionText: string, verif
     try {
         const result = await model.generateContent(prompt);
         const response = await result.response;
-        return JSON.parse(response.text());
+        const text = response.text();
+
+        // Clean markdown if present
+        const cleanJson = text.replace(/```json\n?|```/g, '').trim();
+        const parsed = JSON.parse(cleanJson);
+
+        if (!Array.isArray(parsed)) {
+            throw new Error('AI response is not a valid array');
+        }
+
+        return parsed;
     } catch (error) {
         console.error('Gemini Deep Analysis Error:', error);
-        throw new Error('Failed to analyze content with AI');
+        throw new Error('Failed to analyze content with AI: ' + (error instanceof Error ? error.message : 'Unknown error'));
     }
 };
 
@@ -253,10 +264,20 @@ export const analyzeText = async (questionText: string, answerKeyText: string | 
     try {
         const result = await model.generateContent(prompt);
         const response = await result.response;
-        return JSON.parse(response.text());
+        const text = response.text();
+
+        // Clean markdown if present
+        const cleanJson = text.replace(/```json\n?|```/g, '').trim();
+        const parsed = JSON.parse(cleanJson);
+
+        if (!Array.isArray(parsed)) {
+            throw new Error('AI response is not a valid array');
+        }
+
+        return parsed;
     } catch (error) {
         console.error('Gemini Analysis Error:', error);
-        throw new Error('Failed to analyze content with AI');
+        throw new Error('Failed to analyze content with AI: ' + (error instanceof Error ? error.message : 'Unknown error'));
     }
 };
 
@@ -330,10 +351,20 @@ export const analyzeImages = async (images: string[], answerKeyText: string | nu
 
         const result = await model.generateContent([prompt, ...imageParts]);
         const response = await result.response;
-        return JSON.parse(response.text());
+        const text = response.text();
+
+        // Clean markdown if present
+        const cleanJson = text.replace(/```json\n?|```/g, '').trim();
+        const parsed = JSON.parse(cleanJson);
+
+        if (!Array.isArray(parsed)) {
+            throw new Error('AI response is not a valid array');
+        }
+
+        return parsed;
     } catch (error) {
         console.error('Gemini Vision Analysis Error:', error);
-        throw new Error('Failed to analyze images with AI');
+        throw new Error('Failed to analyze images with AI: ' + (error instanceof Error ? error.message : 'Unknown error'));
     }
 };
 
@@ -383,7 +414,11 @@ export const regenerateExplanations = async (questions: QuestionData[]): Promise
         try {
             const result = await model.generateContent(prompt);
             const response = await result.response;
-            const analyzedBatch = JSON.parse(response.text());
+            const text = response.text();
+
+            // Clean markdown if present
+            const cleanJson = text.replace(/```json\n?|```/g, '').trim();
+            const analyzedBatch = JSON.parse(cleanJson);
 
             // Merge back
             batch.forEach((q) => {
@@ -673,5 +708,73 @@ ${readingSection}
             },
             teacher_comment: `${data.studentName} 학생은 이번 달 영어 학습에 성실하게 참여했습니다. 앞으로도 꾸준한 노력을 기대합니다.`
         };
+    }
+};
+// --- Step 6: AI-Assisted Vocab Cleaning ---
+export const cleanVocabData = async (rawData: any[]): Promise<Partial<VocabWord>[]> => {
+    if (!API_KEY) throw new Error('Gemini API Key is missing');
+    const modelName = await getDynamicModel();
+    const model = genAI.getGenerativeModel({
+        model: modelName,
+        generationConfig: { responseMimeType: "application/json" }
+    });
+
+    const prompt = `
+    You are a professional English lexicographer. 
+    The user provided a list of English words and meanings (possibly messy or incomplete).
+    
+    **TASK**:
+    1. Clean the word and meaning (fix typos, normalize format).
+    2. If the 'example_sentence' is missing or too simple, generate a HIGH-QUALITY, level-appropriate example sentence.
+    3. Return a clean JSON Array of objects with: "word", "meaning", "example_sentence".
+    
+    **INPUT**:
+    ${JSON.stringify(rawData.slice(0, 50))}
+    `;
+
+    try {
+        const result = await model.generateContent(prompt);
+        const response = await result.response;
+        const text = response.text();
+        const cleanJson = text.replace(/```json\n?|```/g, '').trim();
+        return JSON.parse(cleanJson);
+    } catch (error) {
+        console.error('AI Vocab Cleaning Failed:', error);
+        return rawData; // Fallback to raw if AI fails
+    }
+};
+
+// --- Step 7: AI-Powered Vocab Extraction from Raw Text ---
+export const extractVocabFromText = async (text: string): Promise<Partial<VocabWord>[]> => {
+    if (!API_KEY) throw new Error('Gemini API Key is missing');
+    const modelName = await getDynamicModel();
+    const model = genAI.getGenerativeModel({
+        model: modelName,
+        generationConfig: { responseMimeType: "application/json" }
+    });
+
+    const prompt = `
+    You are an expert English teacher's assistant.
+    Below is a raw text extracted from a Word or PDF document containing vocabulary lists.
+    
+    **TASK**:
+    1. Identify all English words and their corresponding Korean meanings.
+    2. Extract them into a clean JSON array of objects.
+    3. If an example sentence is found in the text, include it. If not, leave it empty.
+    4. Format: [{"word": "string", "meaning": "string", "example_sentence": "string"}]
+    
+    **TEXT**:
+    ${text.slice(0, 10000)}
+    `;
+
+    try {
+        const result = await model.generateContent(prompt);
+        const response = await result.response;
+        const responseText = response.text();
+        const cleanJson = responseText.replace(/```json\n?|```/g, '').trim();
+        return JSON.parse(cleanJson);
+    } catch (error) {
+        console.error('AI Vocab Extraction Failed:', error);
+        throw new Error('Failed to extract vocabulary from text using AI');
     }
 };

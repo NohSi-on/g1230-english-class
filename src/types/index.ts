@@ -32,3 +32,20 @@ export interface QuestionItem {
     options?: string[];
     explanation?: string;
 }
+
+export interface VocabSet {
+    id: string;
+    book_id: string;
+    title: string;
+    created_at: string;
+    word_count?: number; // Optional count from join
+}
+
+export interface VocabWord {
+    id: string;
+    set_id: string;
+    word: string;
+    meaning: string;
+    example_sentence?: string;
+    created_at: string;
+}

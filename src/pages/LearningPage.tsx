@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { supabase } from '../lib/supabase';
-import { BookOpen, Search, X, FolderPlus, Folder, ChevronRight, UserPlus, Users, ChevronLeft, Trash2, CheckCircle, XCircle } from 'lucide-react';
+import { BookOpen, Search, X, FolderPlus, Folder, ChevronRight, UserPlus, Users, ChevronLeft, Trash2, CheckCircle, XCircle, BrainCircuit } from 'lucide-react';
 import { useAuth } from '../contexts/AuthContext';
 
 interface Class {
@@ -56,6 +57,7 @@ interface QuestionBlock {
 
 export default function LearningPage() {
     const { user, role } = useAuth();
+    const navigate = useNavigate();
     const [viewMode, setViewMode] = useState<'list' | 'detail'>('list');
     const [selectedClass, setSelectedClass] = useState<Class | null>(null);
 
@@ -100,7 +102,7 @@ export default function LearningPage() {
 
     const fetchClasses = async () => {
         if (!user) return;
-        let query = supabase.from('classes').select('*, class_students(count)');
+        let query = supabase.from('classes').select('*, class_students(count)').eq('class_type', 'MAIN');
         if (role !== 'admin') {
             query = query.eq('teacher_id', user.id);
         }
@@ -630,6 +632,17 @@ export default function LearningPage() {
                                         <span className={`text-xs font-bold truncate ${expandedBookId === book.id ? 'text-indigo-900' : 'text-slate-700'}`}>{book.title}</span>
                                     </div>
                                     <div className="flex items-center">
+                                        <button
+                                            onClick={(e) => {
+                                                e.stopPropagation();
+                                                navigate(`/learn/vocab/${book.id}`);
+                                            }}
+                                            className="mr-1 p-1.5 rounded-lg bg-red-500 text-white hover:bg-red-600 transition-colors z-50 flex items-center gap-1"
+                                            title="단어 학습(학생뷰)"
+                                        >
+                                            <BrainCircuit size={14} />
+                                            <span className="text-[10px] font-bold">STUDY</span>
+                                        </button>
                                         <button
                                             onClick={(e) => {
                                                 e.stopPropagation();

@@ -8,6 +8,9 @@ import StudentsPage from './pages/StudentsPage';
 import LearningPage from './pages/LearningPage';
 import ReportGeneratorPage from './pages/ReportGeneratorPage';
 import ReportViewPage from './pages/ReportViewPage';
+import { VocabUnitList } from './components/learning/vocab/VocabUnitList';
+import { VocabStudyLayout } from './components/learning/vocab/VocabStudyLayout';
+import VocabManagementPage from './pages/VocabManagementPage';
 import { AuthProvider } from './contexts/AuthContext';
 import { ProtectedRoute } from './components/auth/ProtectedRoute';
 
@@ -26,6 +29,9 @@ function App() {
             <Route index element={<Navigate to="/learn" replace />} />
             <Route path="books" element={<BooksPage />} />
             <Route path="learn" element={<LearningPage />} />
+            <Route path="learn/vocab/:bookId" element={<VocabUnitList />} />
+            <Route path="learn/vocab/study/:setId" element={<VocabStudyLayout />} />
+            <Route path="vocab" element={<VocabManagementPage />} />
             <Route path="students" element={<StudentsPage />} />
             <Route path="admin/users" element={<AdminUserConfigs />} />
             <Route path="settings" element={<div>설정 페이지 (준비중)</div>} />

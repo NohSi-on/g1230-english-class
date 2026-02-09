@@ -146,7 +146,7 @@ export function AnalysisSetupModal({ onClose, onStartAnalysis, loading }: Analys
                                     <button onClick={(e) => { e.stopPropagation(); setQuestionFile(null); }} className="p-1 hover:bg-black/10 rounded-full text-slate-500"><X size={14} /></button>
                                 )}
                             </div>
-                            <input ref={questionInputRef} type="file" accept=".pdf" className="hidden" onChange={(e) => setQuestionFile(e.target.files?.[0] || null)} />
+                            <input ref={questionInputRef} type="file" accept=".pdf,.docx" className="hidden" onChange={(e) => setQuestionFile(e.target.files?.[0] || null)} />
                         </div>
 
                         {/* Answer Key File Input */}
@@ -170,7 +170,7 @@ export function AnalysisSetupModal({ onClose, onStartAnalysis, loading }: Analys
                                     <button onClick={(e) => { e.stopPropagation(); setAnswerFile(null); }} className="p-1 hover:bg-black/10 rounded-full text-slate-500"><X size={14} /></button>
                                 )}
                             </div>
-                            <input ref={answerInputRef} type="file" accept=".pdf" className="hidden" onChange={(e) => setAnswerFile(e.target.files?.[0] || null)} />
+                            <input ref={answerInputRef} type="file" accept=".pdf,.docx" className="hidden" onChange={(e) => setAnswerFile(e.target.files?.[0] || null)} />
                         </div>
                     </div>
                 </div>

@@ -17,6 +17,7 @@
     "dotenv": "^17.2.3",
     "framer-motion": "^12.31.0",
     "lucide-react": "^0.563.0",
+    "mammoth": "^1.11.0",
     "pdfjs-dist": "^4.8.69",
     "react": "^19.2.0",
     "react-chartjs-2": "^5.3.1",

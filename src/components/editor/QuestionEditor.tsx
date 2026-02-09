@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { Trash2, AlertCircle, Save, RefreshCw, Layers } from 'lucide-react';
 import type { QuestionData } from '../../services/aiService';
 
@@ -35,6 +35,7 @@ function PageHeaderInput({ value, onChange }: { value: number, onChange: (val: n
                 onBlur={handleCommit}
                 onKeyDown={(e) => e.key === 'Enter' && handleCommit()}
                 className="w-10 bg-transparent border-none p-0 focus:ring-0 text-xs font-bold text-center"
+                translate="no"
             />
         </div>
     );
@@ -169,22 +170,23 @@ export function QuestionEditor({ questions: initialQuestions, onSave, onRegenera
         setQuestions(initialQuestions);
     }, [initialQuestions]);
 
-    const applyUpdate = (index: number, field: keyof QuestionData, value: any) => {
-        const newQuestions = [...questions];
-        const updatedItem = { ...newQuestions[index], [field]: value };
+    const applyUpdate = useCallback((index: number, field: keyof QuestionData, value: any) => {
+        setQuestions(prev => {
+            const newQuestions = [...prev];
+            const updatedItem = { ...newQuestions[index], [field]: value };
 
-        // Synchronize itemId when page or number changes
-        if (field === 'page' || field === 'question_number') {
-            const p = updatedItem.page || 0;
-            const n = updatedItem.question_number || '0';
-            updatedItem.itemId = `${p}_${n}`;
-        }
+            if (field === 'page' || field === 'question_number') {
+                const p = updatedItem.page || 0;
+                const n = updatedItem.question_number || '0';
+                updatedItem.itemId = `${p}_${n}`;
+            }
 
-        newQuestions[index] = updatedItem;
-        setQuestions(newQuestions);
-    };
+            newQuestions[index] = updatedItem;
+            return newQuestions;
+        });
+    }, []);
 
-    const handleUpdate = (index: number, field: keyof QuestionData, value: any) => {
+    const handleUpdate = useCallback((index: number, field: keyof QuestionData, value: any) => {
         const item = questions[index];
 
         if (field === 'page' || field === 'question_number') {
@@ -200,57 +202,62 @@ export function QuestionEditor({ questions: initialQuestions, onSave, onRegenera
         }
 
         applyUpdate(index, field, value);
-    };
+    }, [questions, applyUpdate]);
 
-    const resolveConflict = (action: 'overwrite' | 'rename' | 'cancel') => {
+    const resolveConflict = useCallback((action: 'overwrite' | 'rename' | 'cancel') => {
         if (!conflict) return;
         const { index, field, proposedValue, duplicateAt } = conflict;
 
         if (action === 'overwrite') {
-            const filtered = questions.filter((_, i) => i !== duplicateAt);
-            const newIndex = duplicateAt < index ? index - 1 : index;
-            const newQuestions = [...filtered];
-            const item = newQuestions[newIndex];
-            const updatedItem = { ...item, [field]: proposedValue };
-            const p = updatedItem.page || 0;
-            const n = updatedItem.question_number || '0';
-            updatedItem.itemId = `${p}_${n}`;
-            newQuestions[newIndex] = updatedItem;
-            setQuestions(newQuestions);
+            setQuestions(prev => {
+                const filtered = prev.filter((_, i) => i !== duplicateAt);
+                const newIndex = duplicateAt < index ? index - 1 : index;
+                const newQuestions = [...filtered];
+                const item = newQuestions[newIndex];
+                const updatedItem = { ...item, [field]: proposedValue };
+                const p = updatedItem.page || 0;
+                const n = updatedItem.question_number || '0';
+                updatedItem.itemId = `${p}_${n}`;
+                newQuestions[newIndex] = updatedItem;
+                return newQuestions;
+            });
         } else if (action === 'rename') {
-            const item = questions[index];
-            const p = field === 'page' ? (proposedValue as number) : (item.page || 0);
-            const baseN = field === 'question_number' ? (proposedValue as string) : (item.question_number || '0');
-            let uniqueN = baseN;
-            let targetId = `${p}_${uniqueN}`;
-            let counter = 1;
-            while (questions.some((q, i) => i !== index && q.itemId === targetId)) {
-                uniqueN = `${baseN}(${counter})`;
-                targetId = `${p}_${uniqueN}`;
-                counter++;
-            }
-            const newQuestions = [...questions];
-            newQuestions[index] = { ...item, page: p, question_number: uniqueN, itemId: targetId };
-            setQuestions(newQuestions);
+            setQuestions(prev => {
+                const item = prev[index];
+                const p = field === 'page' ? (proposedValue as number) : (item.page || 0);
+                const baseN = field === 'question_number' ? (proposedValue as string) : (item.question_number || '0');
+                let uniqueN = baseN;
+                let targetId = `${p}_${uniqueN}`;
+                let counter = 1;
+                while (prev.some((q, i) => i !== index && q.itemId === targetId)) {
+                    uniqueN = `${baseN}(${counter})`;
+                    targetId = `${p}_${uniqueN}`;
+                    counter++;
+                }
+                const newQuestions = [...prev];
+                newQuestions[index] = { ...item, page: p, question_number: uniqueN, itemId: targetId };
+                return newQuestions;
+            });
         }
         setConflict(null);
-    };
+    }, [conflict]);
 
-    const handleDelete = (index: number) => {
+    const handleDelete = useCallback((index: number) => {
         if (confirm('이 문항을 삭제하시겠습니까?')) {
-            const newQuestions = questions.filter((_, i) => i !== index);
-            setQuestions(newQuestions);
+            setQuestions(prev => prev.filter((_, i) => i !== index));
         }
-    };
+    }, []);
 
-    const handleRemoveDuplicates = () => {
+    const handleRemoveDuplicates = useCallback(() => {
         const uniqueQuestions: QuestionData[] = [];
         const seen = new Set();
 
         questions.forEach(q => {
-            // Use structured itemId for duplicate detection
-            // Fallback to content-based signature if itemId is missing (unlikely now)
-            const signature = q.itemId || `${q.page}_${q.question_number}_${q.question.trim()}`.toLowerCase();
+            // Use content + type + answer as the signature to catch duplicates even on different pages
+            const content = q.question.trim().toLowerCase();
+            const answer = (q.answer || '').trim().toLowerCase();
+            const type = q.type || '';
+            const signature = `${type}|${content}|${answer}`;
 
             if (!seen.has(signature)) {
                 seen.add(signature);
@@ -266,34 +273,33 @@ export function QuestionEditor({ questions: initialQuestions, onSave, onRegenera
                 setQuestions(uniqueQuestions);
             }
         }
-    };
+    }, [questions]);
 
-    const handleSaveAll = () => {
+    const handleSaveAll = useCallback(() => {
         if (confirm(`총 ${questions.length}개의 문항을 저장하시겠습니까?`)) {
             onSave(questions);
         }
-    };
+    }, [questions, onSave]);
 
-    const handleSavePage = (pageNum: number) => {
+    const handleSavePage = useCallback((pageNum: number) => {
         const pageQuestions = questions.filter(q => (q.page || 0) === pageNum);
         if (confirm(`P.${pageNum}의 ${pageQuestions.length}개 문항을 저장하시겠습니까?`)) {
             onSave(pageQuestions);
         }
-    };
+    }, [questions, onSave]);
 
-    const handleDeletePage = (pageNum: number) => {
+    const handleDeletePage = useCallback((pageNum: number) => {
         const count = questions.filter(q => (q.page || 0) === pageNum).length;
         if (confirm(`P.${pageNum}의 모든 문항(${count}개)을 삭제하시겠습니까?`)) {
-            const newQuestions = questions.filter(q => (q.page || 0) !== pageNum);
-            setQuestions(newQuestions);
+            setQuestions(prev => prev.filter(q => (q.page || 0) !== pageNum));
         }
-    };
+    }, []);
 
-    const handleRegenerateClick = () => {
+    const handleRegenerateClick = useCallback(() => {
         if (onRegenerate && confirm('현재 정답을 기준으로 모든 문항의 해설과 개념을 AI로 다시 작성하시겠습니까?')) {
             onRegenerate(questions);
         }
-    };
+    }, [questions, onRegenerate]);
 
     // Group questions by page
     const groupedQuestions: Record<number, QuestionData[]> = {};
@@ -305,49 +311,51 @@ export function QuestionEditor({ questions: initialQuestions, onSave, onRegenera
 
     const sortedPages = Object.keys(groupedQuestions).map(Number).sort((a, b) => a - b);
 
-    const applyPageMove = (oldPage: number, newPage: number, collisionAction: 'overwrite' | 'rename' | 'none') => {
-        let destQuestions = questions.filter(q => (q.page || 0) === newPage);
-        let srcQuestions = questions.filter(q => (q.page || 0) === oldPage);
-        let otherQuestions = questions.filter(q => (q.page || 0) !== oldPage && (q.page || 0) !== newPage);
+    const applyPageMove = useCallback((oldPage: number, newPage: number, collisionAction: 'overwrite' | 'rename' | 'none') => {
+        setQuestions(prev => {
+            let destQuestions = prev.filter(q => (q.page || 0) === newPage);
+            let srcQuestions = prev.filter(q => (q.page || 0) === oldPage);
+            let otherQuestions = prev.filter(q => (q.page || 0) !== oldPage && (q.page || 0) !== newPage);
 
-        if (collisionAction === 'overwrite') {
-            const srcNums = new Set(srcQuestions.map(q => q.question_number || '0'));
-            destQuestions = destQuestions.filter(q => !srcNums.has(q.question_number || '0'));
-        }
-
-        const movedQuestions: QuestionData[] = [];
-        srcQuestions.forEach(q => {
-            let n = q.question_number || '0';
-            if (collisionAction === 'rename') {
-                const baseN = n;
-                if (destQuestions.some(d => (d.question_number || '0') === n)) {
-                    let counter = 1;
-                    while (destQuestions.some(d => (d.question_number || '0') === `${baseN}(${counter})`) || movedQuestions.some(m => m.question_number === `${baseN}(${counter})`)) {
-                        counter++;
-                    }
-                    n = `${baseN}(${counter})`;
-                }
+            if (collisionAction === 'overwrite') {
+                const srcNums = new Set(srcQuestions.map(q => q.question_number || '0'));
+                destQuestions = destQuestions.filter(q => !srcNums.has(q.question_number || '0'));
             }
-            movedQuestions.push({
-                ...q,
-                page: newPage,
-                itemId: `${newPage}_${n}`,
-                question_number: n
+
+            const movedQuestions: QuestionData[] = [];
+            srcQuestions.forEach(q => {
+                let n = q.question_number || '0';
+                if (collisionAction === 'rename') {
+                    const baseN = n;
+                    if (destQuestions.some(d => (d.question_number || '0') === n)) {
+                        let counter = 1;
+                        while (destQuestions.some(d => (d.question_number || '0') === `${baseN}(${counter})`) || movedQuestions.some(m => m.question_number === `${baseN}(${counter})`)) {
+                            counter++;
+                        }
+                        n = `${baseN}(${counter})`;
+                    }
+                }
+                movedQuestions.push({
+                    ...q,
+                    page: newPage,
+                    itemId: `${newPage}_${n}`,
+                    question_number: n
+                });
             });
+
+            return [...otherQuestions, ...destQuestions, ...movedQuestions];
         });
+    }, []);
 
-        setQuestions([...otherQuestions, ...destQuestions, ...movedQuestions]);
-    };
-
-    const resolvePageConflict = (action: 'overwrite' | 'rename' | 'cancel') => {
+    const resolvePageConflict = useCallback((action: 'overwrite' | 'rename' | 'cancel') => {
         if (!pageConflict) return;
         if (action !== 'cancel') {
             applyPageMove(pageConflict.oldPage, pageConflict.newPage, action);
         }
         setPageConflict(null);
-    };
+    }, [pageConflict, applyPageMove]);
 
-    const handlePageHeaderChange = (oldPageNum: number, newPageNum: number) => {
+    const handlePageHeaderChange = useCallback((oldPageNum: number, newPageNum: number) => {
         if (oldPageNum === newPageNum) return;
 
         const itemsToMove = questions.filter(q => (q.page || 0) === oldPageNum);
@@ -363,17 +371,16 @@ export function QuestionEditor({ questions: initialQuestions, onSave, onRegenera
         }
 
         applyPageMove(oldPageNum, newPageNum, 'none');
-    };
+    }, [questions, applyPageMove]);
 
-    const handlePageTopicChange = (pageNum: number, newTopic: string) => {
-        const newQuestions = questions.map(q => {
+    const handlePageTopicChange = useCallback((pageNum: number, newTopic: string) => {
+        setQuestions(prev => prev.map(q => {
             if ((q.page || 0) === pageNum) {
                 return { ...q, page_topic: newTopic };
             }
             return q;
-        });
-        setQuestions(newQuestions);
-    };
+        }));
+    }, []);
 
     if (questions.length === 0) {
         return (
@@ -468,6 +475,7 @@ export function QuestionEditor({ questions: initialQuestions, onSave, onRegenera
                                         onChange={(e) => handlePageTopicChange(pageNum, e.target.value)}
                                         placeholder="지문 주제/제목 (예: Helen Keller)"
                                         className="w-full bg-white border border-slate-200 px-3 py-1.5 rounded-lg text-xs font-bold text-slate-700 shadow-sm focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 outline-none transition-all"
+                                        translate="no"
                                     />
                                 </div>
                                 <span className="text-xs text-slate-500 font-bold bg-white px-2 py-1 rounded-md border border-slate-200 whitespace-nowrap">
@@ -521,6 +529,7 @@ export function QuestionEditor({ questions: initialQuestions, onSave, onRegenera
                                                     onChange={(e) => handleUpdate(idx, 'question_number', e.target.value)}
                                                     className="w-12 text-xs border-none bg-slate-50 rounded text-slate-700 font-bold focus:ring-0 text-center"
                                                     placeholder="-"
+                                                    translate="no"
                                                 />
                                             </div>
                                             <div className="flex items-center gap-1 ml-2">
@@ -548,6 +557,7 @@ export function QuestionEditor({ questions: initialQuestions, onSave, onRegenera
                                             onChange={(e) => handleUpdate(idx, 'question', e.target.value)}
                                             className="w-full text-sm p-2 border border-slate-200 rounded focus:ring-1 focus:ring-indigo-500 focus:border-indigo-500 min-h-[60px]"
                                             placeholder="문제 내용"
+                                            translate="no"
                                         />
                                     </div>
 
@@ -568,6 +578,7 @@ export function QuestionEditor({ questions: initialQuestions, onSave, onRegenera
                                                             handleUpdate(idx, 'options', newOptions);
                                                         }}
                                                         className="flex-1 bg-transparent border-none p-0 focus:ring-0 text-xs"
+                                                        translate="no"
                                                     />
                                                 </div>
                                             ))}
@@ -583,6 +594,7 @@ export function QuestionEditor({ questions: initialQuestions, onSave, onRegenera
                                                 value={q.answer || ''}
                                                 onChange={(e) => handleUpdate(idx, 'answer', e.target.value)}
                                                 className="w-full text-sm p-1.5 border border-slate-200 rounded focus:ring-1 focus:ring-green-500 focus:border-green-500 font-bold text-green-700"
+                                                translate="no"
                                             />
                                         </div>
                                         <div>
@@ -593,6 +605,7 @@ export function QuestionEditor({ questions: initialQuestions, onSave, onRegenera
                                                 onChange={(e) => handleUpdate(idx, 'concept', e.target.value)}
                                                 className="w-full text-xs p-1.5 border border-slate-200 rounded focus:ring-1 focus:ring-blue-500 focus:border-blue-500 text-blue-600"
                                                 placeholder="예: 관계대명사 wh..."
+                                                translate="no"
                                             />
                                         </div>
                                     </div>
@@ -603,6 +616,7 @@ export function QuestionEditor({ questions: initialQuestions, onSave, onRegenera
                                             value={q.explanation || ''}
                                             onChange={(e) => handleUpdate(idx, 'explanation', e.target.value)}
                                             className="w-full text-xs p-2 border border-slate-200 rounded focus:ring-1 focus:ring-slate-500 bg-slate-50 min-h-[40px]"
+                                            translate="no"
                                         />
                                     </div>
                                 </div>

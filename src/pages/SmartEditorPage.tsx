@@ -14,6 +14,13 @@ export default function SmartEditorPage() {
     const { bookId } = useParams();
     const navigate = useNavigate();
     const { role } = useAuth();
+    const [apiKeyMissing, setApiKeyMissing] = useState(false);
+
+    useEffect(() => {
+        if (!import.meta.env.VITE_GEMINI_API_KEY) {
+            setApiKeyMissing(true);
+        }
+    }, []);
 
     useEffect(() => {
         if (role && role !== 'admin') {
@@ -29,7 +36,7 @@ export default function SmartEditorPage() {
     const [isAnalysisModalOpen, setIsAnalysisModalOpen] = useState(false);
 
     // Review Mode State
-    const [reviewMode, setReviewMode] = useState(false);
+
     const [extractedQuestions, setExtractedQuestions] = useState<QuestionData[]>([]);
 
     useEffect(() => {
@@ -63,7 +70,6 @@ export default function SmartEditorPage() {
                     })));
                     if (allItems.length > 0) {
                         setExtractedQuestions(allItems);
-                        setReviewMode(true);
                         console.log(`Loaded ${allItems.length} existing questions.`);
                     }
                 }
@@ -90,7 +96,6 @@ export default function SmartEditorPage() {
     ) => {
         try {
             setAnalyzing(true);
-            setReviewMode(false); // Reset review mode
             setStatusMessage('분석 준비 중...');
 
             // --- Batch Configuration ---
@@ -191,8 +196,8 @@ export default function SmartEditorPage() {
                 await new Promise(r => setTimeout(r, 500));
             }
 
-            setReviewMode(true);
             setIsAnalysisModalOpen(false);
+            setExtractedQuestions(workingQuestions);
 
             alert(`분석 완료! 총 ${workingQuestions.length}개의 문항이 정리되었습니다.\n우측 패널에서 내용을 검토해주세요.`);
 
@@ -226,7 +231,7 @@ export default function SmartEditorPage() {
             setAnalyzing(false);
             setStatusMessage('');
         }
-    };
+    }, [bookId]);
 
     // 2. Final Save from Review Editor
     const handleSaveQuestions = useCallback(async (finalQuestions: QuestionData[]) => {
@@ -248,13 +253,12 @@ export default function SmartEditorPage() {
             const pagesToSave = Object.keys(questionsByPage).map(Number);
             console.log('Pages to save:', pagesToSave);
 
-            // Strategy: Targeted Refresh for pages being saved.
-            // 1. Delete ONLY the pages we are about to save for this book
+            // Strategy: Full Refresh for this book
+            // 1. Delete ALL existing items for this book
             const { error: deleteError } = await supabase
                 .from('questions')
                 .delete()
-                .eq('book_id', bookId)
-                .in('page_number', pagesToSave);
+                .eq('book_id', bookId);
 
             if (deleteError) throw deleteError;
 
@@ -299,7 +303,12 @@ export default function SmartEditorPage() {
 
     return (
         <ErrorBoundary componentName="SmartEditorPage">
-            <div className="flex flex-col h-screen bg-slate-50">
+            <div className="flex flex-col h-screen bg-slate-50" translate="no">
+                {apiKeyMissing && (
+                    <div className="bg-red-600 text-white px-4 py-2 text-center text-sm font-bold animate-pulse z-50">
+                        ⚠️ Gemini API Key가 설정되지 않았습니다. 관리자에게 문의하세요.
+                    </div>
+                )}
                 {isAnalysisModalOpen && (
                     <AnalysisSetupModal
                         onClose={() => !analyzing && setIsAnalysisModalOpen(false)}
@@ -356,6 +365,5 @@ export default function SmartEditorPage() {
                 </div>
             </div>
         </ErrorBoundary>
-    );
     );
 }

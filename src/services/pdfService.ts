@@ -1,6 +1,7 @@
 import * as pdfjs from 'pdfjs-dist';
+import mammoth from 'mammoth';
 
-// Ensure worker is configured (using same CDN version as PdfViewer to match)
+// Ensure worker is configured (matching package.json version 4.8.69)
 pdfjs.GlobalWorkerOptions.workerSrc = `https://unpkg.com/pdfjs-dist@4.8.69/build/pdf.worker.min.mjs`;
 
 interface PageRange {
@@ -9,6 +10,23 @@ interface PageRange {
 }
 
 export const extractTextFromLocalFile = async (file: File, range?: PageRange): Promise<string> => {
+    const fileName = file.name.toLowerCase();
+    console.log('Extracting text from file:', fileName, 'Type:', file.type);
+
+    // Support for Word (.docx)
+    if (fileName.endsWith('.docx') || file.type === 'application/vnd.openxmlformats-officedocument.wordprocessingml.document') {
+        console.log('Detected Word file, using mammoth...');
+        try {
+            const arrayBuffer = await file.arrayBuffer();
+            const result = await mammoth.extractRawText({ arrayBuffer });
+            return result.value;
+        } catch (error) {
+            console.error('Word Extraction Error:', error);
+            throw new Error('Failed to extract text from Word document');
+        }
+    }
+
+    // Default to PDF
     try {
         const arrayBuffer = await file.arrayBuffer();
         const loadingTask = pdfjs.getDocument({ data: arrayBuffer });
@@ -90,6 +108,11 @@ export const convertPdfToImages = async (file: File, range?: PageRange, maxPages
 };
 
 export const getPdfPageCount = async (file: File): Promise<number> => {
+    const fileName = file.name.toLowerCase();
+    if (fileName.endsWith('.docx') || file.type === 'application/vnd.openxmlformats-officedocument.wordprocessingml.document') {
+        console.log('getPdfPageCount: Detected Word file, returning 1');
+        return 1; // Word treats as single "logical" document for batching
+    }
     try {
         const arrayBuffer = await file.arrayBuffer();
         const loadingTask = pdfjs.getDocument({ data: arrayBuffer });
