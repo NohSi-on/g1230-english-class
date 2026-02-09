@@ -544,7 +544,7 @@ export function QuestionEditor({ questions: initialQuestions, onSave, onRegenera
                                     {/* Question Content */}
                                     <div className="mb-3">
                                         <textarea
-                                            value={q.question}
+                                            value={q.question || ''}
                                             onChange={(e) => handleUpdate(idx, 'question', e.target.value)}
                                             className="w-full text-sm p-2 border border-slate-200 rounded focus:ring-1 focus:ring-indigo-500 focus:border-indigo-500 min-h-[60px]"
                                             placeholder="문제 내용"
@@ -561,7 +561,7 @@ export function QuestionEditor({ questions: initialQuestions, onSave, onRegenera
                                                     </span>
                                                     <input
                                                         type="text"
-                                                        value={opt}
+                                                        value={opt || ''}
                                                         onChange={(e) => {
                                                             const newOptions = [...q.options!];
                                                             newOptions[optIdx] = e.target.value;
@@ -580,7 +580,7 @@ export function QuestionEditor({ questions: initialQuestions, onSave, onRegenera
                                             <label className="block text-xs font-bold text-slate-500 mb-1">정답</label>
                                             <input
                                                 type="text"
-                                                value={q.answer}
+                                                value={q.answer || ''}
                                                 onChange={(e) => handleUpdate(idx, 'answer', e.target.value)}
                                                 className="w-full text-sm p-1.5 border border-slate-200 rounded focus:ring-1 focus:ring-green-500 focus:border-green-500 font-bold text-green-700"
                                             />
@@ -600,7 +600,7 @@ export function QuestionEditor({ questions: initialQuestions, onSave, onRegenera
                                     <div className="mt-2">
                                         <label className="block text-xs font-bold text-slate-500 mb-1">해설</label>
                                         <textarea
-                                            value={q.explanation}
+                                            value={q.explanation || ''}
                                             onChange={(e) => handleUpdate(idx, 'explanation', e.target.value)}
                                             className="w-full text-xs p-2 border border-slate-200 rounded focus:ring-1 focus:ring-slate-500 bg-slate-50 min-h-[40px]"
                                         />

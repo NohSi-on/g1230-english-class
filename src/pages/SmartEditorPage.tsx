@@ -3,6 +3,7 @@ import { useParams, useNavigate } from 'react-router-dom';
 import { ArrowLeft, Bot, Loader2 } from 'lucide-react';
 import { AnalysisSetupModal } from '../components/editor/AnalysisSetupModal';
 import { QuestionEditor } from '../components/editor/QuestionEditor';
+import { ErrorBoundary } from '../components/common/ErrorBoundary';
 import { supabase } from '../lib/supabase';
 import { useAuth } from '../contexts/AuthContext';
 
@@ -73,6 +74,7 @@ export default function SmartEditorPage() {
             }
         }
         fetchBookAndQuestions();
+        console.log("SmartEditor Page Loaded - Version 2.2 (Fix White Screen & Error Boundary)");
     }, [bookId]);
 
     const handleAnalysisClick = () => {
@@ -337,16 +339,18 @@ export default function SmartEditorPage() {
             {/* Main Content: Full Screen Editor */}
             <div className="flex-1 overflow-hidden bg-slate-100 p-4">
                 <div className="max-w-5xl mx-auto h-full shadow-xl rounded-xl overflow-hidden bg-white">
-                    <QuestionEditor
-                        questions={extractedQuestions}
-                        onSave={handleSaveQuestions}
-                        onRegenerate={handleRegenerateExplanations}
-                        onCancel={() => {
-                            if (confirm('모든 문항을 지우고 초기화하시겠습니까?')) {
-                                setExtractedQuestions([]);
-                            }
-                        }}
-                    />
+                    <ErrorBoundary componentName="QuestionEditor">
+                        <QuestionEditor
+                            questions={extractedQuestions}
+                            onSave={handleSaveQuestions}
+                            onRegenerate={handleRegenerateExplanations}
+                            onCancel={() => {
+                                if (confirm('모든 문항을 지우고 초기화하시겠습니까?')) {
+                                    setExtractedQuestions([]);
+                                }
+                            }}
+                        />
+                    </ErrorBoundary>
                 </div>
             </div>
         </div>
