@@ -165,6 +165,7 @@ export const analyzeDeepWithVerifiedAnswers = async (questionText: string, verif
     4. **Explanation**: Write a detailed explanation in Korean explaining WHY the verified answer is correct.
     5. **Type**: Classify (GRAMMAR, READING, VOCABULARY, LISTENING).
     6. **Page**: meaningful page number.
+    7. **Review Mode**: This is for a "Review Test". Ensure explanations are helpful for students reviewing their wrong answers.
     
     Output: JSON Array of QuestionData objects.
     
@@ -213,11 +214,14 @@ export const analyzeText = async (questionText: string, answerKeyText: string | 
     
     **INSTRUCTIONS**:
     1. **Page Number**: Extract the page number for every question. If a question spans pages, use the starting page.
-    2. **Concept [HIGH PRECISION]**: Identify the granular concept or skill. Be extremely specific (e.g., "past tense irregular verbs" instead of "past tense").
+    2. **Concept [HIGH PRECISION]**: Identify the granular concept or skill. 
+       - Grammar Example: "to-infinitive (adjectival use)", "relatives (who vs. whom)", "subjunctive mood (past)"
+       - Reading Example: "topic inference", "detail detection", "logical sequence"
     3. **itemId [STABLE ID]**: Generate a globally unique ID using the format '${bookId}_\${page}_\${question_number}' (e.g., '${bookId}_14_q1', '${bookId}_15_q2-a').
     4. **Answer**: Use the provided 'Answer Key Content' to find the correct answer. If not found, solve it yourself but mark it as tentative.
-    5. **Type**: Classify into 'GRAMMAR', 'READING', 'VOCABULARY', 'LISTENING'.
-    6. **Page Topic [NEW]**: Identify the overarching **Theme or Topic** of the passage on this page (e.g., "A Great Teacher (Helen Keller)", "The Solar System"). This is crucial for reports.
+    5. **Explanation**: Provide a clear, helpful explanation in **Korean**. Focus on WHY the answer is correct and why others are wrong.
+    6. **Type**: Classify into 'GRAMMAR', 'READING', 'VOCABULARY', 'LISTENING'.
+    7. **Page Topic [NEW]**: Identify the overarching **Theme or Topic** of the passage on this page (e.g., "A Great Teacher (Helen Keller)", "The Solar System").
     
     Output Format: JSON Array of objects.
     
@@ -231,7 +235,7 @@ export const analyzeText = async (questionText: string, answerKeyText: string | 
         "answer": "Correct answer",
         "options": ["Option A", "Option B", "Option C", "Option D"], (or null)
         "explanation": "Detailed explanation in Korean...",
-        "concept": "Specific concept (e.g. '동명사 주어', '관계대명사 what')",
+        "concept": "Specific concept (e.g. '투부정사의 형용사적 용법', '관계대명사 what')",
         "page_topic": "Page-level theme/topic",
         "page": 1
       }
@@ -289,11 +293,13 @@ export const analyzeImages = async (images: string[], answerKeyText: string | nu
     
     **INSTRUCTIONS**:
     1. **Page Number**: Infer page number from the image content (look for page markers).
-    2. **Concept [HIGH PRECISION]**: Identify the granular concept or reading skill. Provide the level of detail required for practice question matching.
+    2. **Concept [HIGH PRECISION]**: Identify the granular concept or reading skill. 
+       - Use Korean terms for grammar concepts if appropriate (e.g., "관계대명사", "가정법 과거").
     3. **itemId [STABLE ID]**: Generate a globally unique ID using the format '${bookId}_\${page}_\${question_number}' (e.g., '${bookId}_14_q1', '${bookId}_15_q2-a').
     4. **Answer**: Solve the question yourself accurately (since answer key is not provided in images usually).
-    5. **Type**: Classify into 'GRAMMAR', 'READING', 'VOCABULARY', 'LISTENING'.
-    6. **Page Topic [NEW]**: Identify the overarching **Theme or Topic** of the passage on this page.
+    5. **Explanation**: Provide a detailed explanation in **Korean**.
+    6. **Type**: Classify into 'GRAMMAR', 'READING', 'VOCABULARY', 'LISTENING'.
+    7. **Page Topic [NEW]**: Identify the overarching **Theme or Topic** of the passage on this page.
     
     Output Format: JSON Array of objects.
     
@@ -306,8 +312,8 @@ export const analyzeImages = async (images: string[], answerKeyText: string | nu
         "question": "Question text...",
         "answer": "Correct answer",
         "options": ["Option A", "Option B", "Option C", "Option D"], (or null)
-        "explanation": "Detailed explanation in Korean...",
-        "concept": "Specific concept",
+        "explanation": "Detailed explanation in Korean",
+        "concept": "Specific concept (Korean preferred)",
         "page_topic": "Page-level theme/topic",
         "page": 1
       }

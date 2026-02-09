@@ -496,7 +496,7 @@ export function QuestionEditor({ questions: initialQuestions, onSave, onRegenera
                         {groupedQuestions[pageNum].map((q) => {
                             const idx = questions.findIndex(origQ => origQ === q);
                             return (
-                                <div key={idx} className="bg-white p-4 rounded-lg border border-slate-200 shadow-sm hover:border-indigo-200 transition-colors">
+                                <div key={q.itemId || idx} className="bg-white p-4 rounded-lg border border-slate-200 shadow-sm hover:border-indigo-200 transition-colors">
                                     {/* Header: Type, Page, Delete */}
                                     <div className="flex items-start justify-between mb-3">
                                         <div className="flex items-center gap-2">

@@ -179,12 +179,7 @@ export default function SmartEditorPage() {
                     if (batchQuestions && Array.isArray(batchQuestions)) {
                         if (batchQuestions.length > 0) {
                             workingQuestions = processAndMerge(batchQuestions);
-                            setExtractedQuestions([...workingQuestions]);
-                            setStatusMessage(`분석 중... (${currentBatchNum}/${totalBatches} 구간) - 총 ${workingQuestions.length}문항 관리 중`);
-
-                            if (!reviewMode) {
-                                setReviewMode(true);
-                            }
+                            setStatusMessage(`분석 중... (${currentBatchNum}/${totalBatches} 구간) - 현재까지 ${workingQuestions.length}문항 발견`);
                         }
                     }
                 } catch (batchError) {
@@ -201,7 +196,12 @@ export default function SmartEditorPage() {
 
         } catch (error: any) {
             console.error('Batch Analysis failed:', error);
-            alert(`분석 중 오류 발생: ${error.message}`);
+            // Show more user-friendly error
+            let userMsg = error.message;
+            if (error.message.includes('API Key')) userMsg = 'API 키가 설정되지 않았습니다. 관리자에게 문의하세요.';
+            else if (error.message.includes('Candidate was stopped')) userMsg = 'AI 분석이 보안 정책에 의해 차단되었습니다.';
+
+            alert(`분석 중 오류 발생: ${userMsg}\n\n잠시 후 다시 시도하거나, 더 작은 범위로 나누어 진행해주세요.`);
         } finally {
             setAnalyzing(false);
             setStatusMessage('');
