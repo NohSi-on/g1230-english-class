@@ -289,75 +289,73 @@ export default function SmartEditorPage() {
             console.error('Save failed:', error);
             alert(`저장 실패: ${error.message}`);
         }
-    };
+    }, [bookId]);
 
-}, [bookId]);
+    const handleCancel = useCallback(() => {
+        if (confirm('모든 문항을 지우고 초기화하시겠습니까?')) {
+            setExtractedQuestions([]);
+        }
+    }, []);
 
-const handleCancel = useCallback(() => {
-    if (confirm('모든 문항을 지우고 초기화하시겠습니까?')) {
-        setExtractedQuestions([]);
-    }
-}, []);
+    return (
+        <ErrorBoundary componentName="SmartEditorPage">
+            <div className="flex flex-col h-screen bg-slate-50">
+                {isAnalysisModalOpen && (
+                    <AnalysisSetupModal
+                        onClose={() => !analyzing && setIsAnalysisModalOpen(false)}
+                        onStartAnalysis={handleStartAnalysis}
+                        loading={analyzing}
+                    />
+                )}
 
-return (
-    <ErrorBoundary componentName="SmartEditorPage">
-        <div className="flex flex-col h-screen bg-slate-50">
-            {isAnalysisModalOpen && (
-                <AnalysisSetupModal
-                    onClose={() => !analyzing && setIsAnalysisModalOpen(false)}
-                    onStartAnalysis={handleStartAnalysis}
-                    loading={analyzing}
-                />
-            )}
+                {/* Header */}
+                <header className="h-14 bg-white border-b border-slate-200 flex items-center justify-between px-4 shrink-0 z-10">
+                    <div className="flex items-center gap-4">
+                        <button
+                            onClick={() => navigate('/books')}
+                            className="p-1 hover:bg-slate-100 rounded text-slate-500"
+                        >
+                            <ArrowLeft size={20} />
+                        </button>
+                        <div>
+                            <h1 className="font-bold text-slate-800 text-sm">{bookTitle || '로딩 중...'}</h1>
+                            <p className="text-xs text-slate-500">AI Smart Editor</p>
+                        </div>
+                    </div>
+                    {/* Header Actions */}
+                    <div className="flex items-center gap-2">
+                        {analyzing && (
+                            <span className="text-sm text-brand-600 font-bold mr-4" translate="no">
+                                {statusMessage || '분석 중...'}
+                            </span>
+                        )}
+                        <button
+                            onClick={handleAnalysisClick}
+                            disabled={analyzing}
+                            className={`px-3 py-1.5 rounded-lg text-sm font-medium flex items-center gap-1.5 transition-colors ${analyzing
+                                ? 'bg-slate-100 text-slate-400 cursor-not-allowed'
+                                : 'bg-brand-50 text-brand-700 hover:bg-brand-100'
+                                }`}
+                        >
+                            {analyzing ? <Loader2 className="animate-spin" size={16} /> : <Bot size={16} />}
+                            {analyzing ? '분석 중...' : 'AI 자동 분석'}
+                        </button>
+                    </div>
+                </header>
 
-            {/* Header */}
-            <header className="h-14 bg-white border-b border-slate-200 flex items-center justify-between px-4 shrink-0 z-10">
-                <div className="flex items-center gap-4">
-                    <button
-                        onClick={() => navigate('/books')}
-                        className="p-1 hover:bg-slate-100 rounded text-slate-500"
-                    >
-                        <ArrowLeft size={20} />
-                    </button>
-                    <div>
-                        <h1 className="font-bold text-slate-800 text-sm">{bookTitle || '로딩 중...'}</h1>
-                        <p className="text-xs text-slate-500">AI Smart Editor</p>
+                {/* Main Content: Full Screen Editor */}
+                <div className="flex-1 overflow-hidden bg-slate-100 p-4">
+                    <div className="max-w-5xl mx-auto h-full shadow-xl rounded-xl overflow-hidden bg-white">
+                        <QuestionEditor
+                            questions={extractedQuestions}
+                            onSave={handleSaveQuestions}
+                            onRegenerate={handleRegenerateExplanations}
+                            onCancel={handleCancel}
+                        />
                     </div>
                 </div>
-                {/* Header Actions */}
-                <div className="flex items-center gap-2">
-                    {analyzing && (
-                        <span className="text-sm text-brand-600 font-bold mr-4" translate="no">
-                            {statusMessage || '분석 중...'}
-                        </span>
-                    )}
-                    <button
-                        onClick={handleAnalysisClick}
-                        disabled={analyzing}
-                        className={`px-3 py-1.5 rounded-lg text-sm font-medium flex items-center gap-1.5 transition-colors ${analyzing
-                            ? 'bg-slate-100 text-slate-400 cursor-not-allowed'
-                            : 'bg-brand-50 text-brand-700 hover:bg-brand-100'
-                            }`}
-                    >
-                        {analyzing ? <Loader2 className="animate-spin" size={16} /> : <Bot size={16} />}
-                        {analyzing ? '분석 중...' : 'AI 자동 분석'}
-                    </button>
-                </div>
-            </header>
-
-            {/* Main Content: Full Screen Editor */}
-            <div className="flex-1 overflow-hidden bg-slate-100 p-4">
-                <div className="max-w-5xl mx-auto h-full shadow-xl rounded-xl overflow-hidden bg-white">
-                    <QuestionEditor
-                        questions={extractedQuestions}
-                        onSave={handleSaveQuestions}
-                        onRegenerate={handleRegenerateExplanations}
-                        onCancel={handleCancel}
-                    />
-                </div>
             </div>
-        </div>
-    </ErrorBoundary>
-);
+        </ErrorBoundary>
+    );
     );
 }
