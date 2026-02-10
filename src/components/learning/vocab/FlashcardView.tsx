@@ -198,7 +198,7 @@ export function FlashcardView({ words: initialWords }: Props) {
             </div>
 
             {/* Card Container */}
-            <div className="relative w-full max-w-xl aspect-[1.4/1] perspective-1000 mb-12">
+            <div className="relative w-full max-w-sm sm:max-w-xl aspect-[0.9/1] sm:aspect-[1.4/1] perspective-1000 mb-6 sm:mb-12">
                 <AnimatePresence initial={false} custom={direction}>
                     <motion.div
                         key={currentIndex}
@@ -221,27 +221,27 @@ export function FlashcardView({ words: initialWords }: Props) {
                             onClick={() => setIsFlipped(!isFlipped)}
                         >
                             {/* FRONT */}
-                            <div className="absolute inset-0 backface-hidden bg-white rounded-[2.5rem] shadow-2xl flex flex-col items-center justify-center border-4 border-white overflow-hidden">
+                            <div className="absolute inset-0 backface-hidden bg-white rounded-[1.5rem] sm:rounded-[2.5rem] shadow-2xl flex flex-col items-center justify-center border-2 sm:border-4 border-white overflow-hidden">
                                 <div className="absolute inset-0 bg-gradient-to-br from-indigo-50/50 to-transparent pointer-events-none" />
-                                <span className="text-slate-300 text-[10px] font-black absolute top-8 left-8 tracking-[0.2em]">ENGLISH</span>
-                                <h2 className="text-5xl sm:text-6xl font-black text-slate-800 tracking-tight text-center px-6 leading-tight">
+                                <span className="text-slate-300 text-[8px] sm:text-[10px] font-black absolute top-4 sm:top-8 left-4 sm:left-8 tracking-[0.2em]">ENGLISH</span>
+                                <h2 className="text-4xl sm:text-6xl font-black text-slate-800 tracking-tight text-center px-4 leading-tight break-all">
                                     {currentWord.word}
                                 </h2>
                                 <button
                                     onClick={(e) => { e.stopPropagation(); speak(currentWord.word); }}
-                                    className="absolute bottom-8 right-8 bg-indigo-50 text-indigo-600 p-4 rounded-2xl hover:bg-indigo-100 transition-all active:scale-90"
+                                    className="absolute bottom-4 sm:bottom-8 right-4 sm:right-8 bg-indigo-50 text-indigo-600 p-3 sm:p-4 rounded-xl sm:rounded-2xl hover:bg-indigo-100 transition-all active:scale-90"
                                 >
-                                    <Volume2 size={24} />
+                                    <Volume2 size={20} className="sm:w-6 sm:h-6" />
                                 </button>
                             </div>
 
                             {/* BACK */}
-                            <div className="absolute inset-0 backface-hidden rotate-y-180 bg-indigo-600 rounded-[2.5rem] shadow-2xl flex flex-col items-center justify-center text-white p-8">
-                                <span className="text-indigo-300 text-[10px] font-black absolute top-8 left-8 tracking-[0.2em]">MEANING</span>
+                            <div className="absolute inset-0 backface-hidden rotate-y-180 bg-indigo-600 rounded-[1.5rem] sm:rounded-[2.5rem] shadow-2xl flex flex-col items-center justify-center text-white p-4 sm:p-8">
+                                <span className="text-indigo-300 text-[8px] sm:text-[10px] font-black absolute top-4 sm:top-8 left-4 sm:left-8 tracking-[0.2em]">MEANING</span>
                                 <motion.h2
                                     initial={{ opacity: 0, y: 10 }}
                                     animate={{ opacity: isFlipped ? 1 : 0, y: isFlipped ? 0 : 10 }}
-                                    className="text-4xl font-bold mb-6 text-center leading-tight"
+                                    className="text-2xl sm:text-4xl font-bold mb-4 sm:mb-6 text-center leading-tight"
                                 >
                                     {currentWord.meaning}
                                 </motion.h2>
@@ -249,7 +249,7 @@ export function FlashcardView({ words: initialWords }: Props) {
                                     <motion.p
                                         initial={{ opacity: 0 }}
                                         animate={{ opacity: isFlipped ? 0.9 : 0 }}
-                                        className="text-indigo-100 text-base sm:text-lg text-center leading-relaxed max-w-sm italic opacity-80"
+                                        className="text-indigo-100 text-sm sm:text-lg text-center leading-relaxed max-w-sm italic opacity-80 line-clamp-3 sm:line-clamp-none"
                                     >
                                         "{currentWord.example_sentence}"
                                     </motion.p>
@@ -261,22 +261,22 @@ export function FlashcardView({ words: initialWords }: Props) {
             </div>
 
             {/* Classcard Style O/X Buttons */}
-            <div className="w-full max-w-md grid grid-cols-2 gap-4">
+            <div className="w-full max-w-sm sm:max-w-md grid grid-cols-2 gap-3 sm:gap-4">
                 <button
                     onClick={markAsUnknown}
-                    className="flex flex-col items-center justify-center py-6 bg-red-50 text-red-500 rounded-3xl border-2 border-red-100 hover:bg-red-100 transition-all active:scale-95 group"
+                    className="flex flex-col items-center justify-center py-4 sm:py-6 bg-red-50 text-red-500 rounded-2xl sm:rounded-3xl border border-red-100 hover:bg-red-100 transition-all active:scale-95 group"
                 >
-                    <X size={40} className="mb-2 group-hover:scale-110 transition-transform" />
-                    <span className="font-black text-lg">모름 (X)</span>
-                    <span className="text-[10px] opacity-50 mt-1">Shift / Left Arrow</span>
+                    <X size={32} className="sm:w-10 sm:h-10 mb-1 sm:mb-2 group-hover:scale-110 transition-transform" />
+                    <span className="font-black text-sm sm:text-lg">모름 (X)</span>
+                    <span className="hidden sm:block text-[10px] opacity-50 mt-1">Shift / Left Arrow</span>
                 </button>
                 <button
                     onClick={markAsKnown}
-                    className="flex flex-col items-center justify-center py-6 bg-green-50 text-green-600 rounded-3xl border-2 border-green-100 hover:bg-green-100 transition-all active:scale-95 group"
+                    className="flex flex-col items-center justify-center py-4 sm:py-6 bg-green-50 text-green-600 rounded-2xl sm:rounded-3xl border border-green-100 hover:bg-green-100 transition-all active:scale-95 group"
                 >
-                    <Check size={40} className="mb-2 group-hover:scale-110 transition-transform" />
-                    <span className="font-black text-lg">앎 (O)</span>
-                    <span className="text-[10px] opacity-50 mt-1">Enter / Right Arrow</span>
+                    <Check size={32} className="sm:w-10 sm:h-10 mb-1 sm:mb-2 group-hover:scale-110 transition-transform" />
+                    <span className="font-black text-sm sm:text-lg">앎 (O)</span>
+                    <span className="hidden sm:block text-[10px] opacity-50 mt-1">Enter / Right Arrow</span>
                 </button>
             </div>
 

@@ -5,11 +5,11 @@ import { clsx } from 'clsx';
 import { useAuth } from '../../contexts/AuthContext';
 
 const MENU_ITEMS = [
-    { icon: BookOpen, label: '교재 관리', path: '/books' },
-    { icon: Gamepad2, label: '나의 클래스', path: '/learn' },
-    { icon: BrainCircuit, label: '단어 학습', path: '/vocab' },
-    { icon: GraduationCap, label: '학생 관리', path: '/students' },
-    { icon: FileText, label: '학습 리포트', path: '/reports/new' },
+    { icon: BookOpen, label: '교재 관리', path: '/books', requiredRole: ['admin', 'teacher'] },
+    { icon: Gamepad2, label: '나의 클래스', path: '/learn', requiredRole: ['admin', 'teacher'] },
+    { icon: BrainCircuit, label: '단어 학습', path: '/vocab', requiredRole: ['admin', 'teacher'] },
+    { icon: GraduationCap, label: '학생 관리', path: '/students', requiredRole: ['admin', 'teacher'] },
+    { icon: FileText, label: '학습 리포트', path: '/reports/new', requiredRole: ['admin', 'teacher'] },
     { icon: Settings, label: '접속 허용 관리', path: '/admin/users', requiredRole: 'admin' },
 ];
 
@@ -28,7 +28,10 @@ export function Sidebar() {
 
             <nav className="flex-1 p-4 space-y-1">
                 {MENU_ITEMS.map((item) => {
-                    if (item.requiredRole && item.requiredRole !== role) return null;
+                    if (item.requiredRole) {
+                        const roles = Array.isArray(item.requiredRole) ? item.requiredRole : [item.requiredRole];
+                        if (!role || !roles.includes(role)) return null;
+                    }
 
                     const Icon = item.icon;
                     const isActive = location.pathname === item.path;

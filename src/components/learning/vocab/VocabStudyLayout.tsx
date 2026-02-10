@@ -34,22 +34,26 @@ export function VocabStudyLayout() {
     if (loading) return <div className="p-8 text-center animate-pulse">Loading words...</div>;
 
     return (
-        <div className="flex flex-col h-[calc(100vh-64px)] bg-slate-50">
+        <div className="flex flex-col h-screen sm:h-[calc(100vh-64px)] bg-slate-50 overflow-hidden">
             {/* Header */}
-            <header className="bg-white border-b border-slate-200 px-6 py-4 flex items-center justify-between shrink-0">
-                <div className="flex items-center gap-4">
-                    <button onClick={() => navigate(-1)} className="text-slate-400 hover:text-slate-700">
-                        <ArrowLeft size={24} />
-                    </button>
-                    <h1 className="text-xl font-bold text-slate-800">
-                        Day 01 - 기본 영단어 { /* TODO: Fetch Title */}
-                    </h1>
-                    <span className="bg-indigo-100 text-indigo-700 text-xs px-2 py-1 rounded-full font-bold">
-                        {words.length} 단어
-                    </span>
+            <header className="bg-white border-b border-slate-200 px-4 sm:px-6 py-3 sm:py-4 flex flex-col sm:flex-row items-center justify-between gap-3 shrink-0">
+                <div className="flex items-center justify-between w-full sm:w-auto gap-4">
+                    <div className="flex items-center gap-3">
+                        <button onClick={() => navigate(-1)} className="text-slate-400 hover:text-slate-700 p-1">
+                            <ArrowLeft size={24} />
+                        </button>
+                        <div className="flex flex-col sm:flex-row sm:items-center gap-0 sm:gap-2">
+                            <h1 className="text-base sm:text-xl font-bold text-slate-800 line-clamp-1">
+                                Day 01 - 기본 영단어
+                            </h1>
+                            <span className="bg-indigo-100 text-indigo-700 text-[10px] sm:text-xs px-2 py-0.5 rounded-full font-bold w-fit">
+                                {words.length} 단어
+                            </span>
+                        </div>
+                    </div>
                 </div>
 
-                <div className="flex bg-slate-100 p-1 rounded-xl">
+                <div className="flex bg-slate-100 p-1 rounded-xl w-full sm:w-auto">
                     <TabButton
                         active={mode === 'MEMORIZE'}
                         icon={<BrainCircuit size={18} />}

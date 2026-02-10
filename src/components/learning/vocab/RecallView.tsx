@@ -106,9 +106,9 @@ export function RecallView({ words }: Props) {
     if (!currentWord) return <div className="p-10 text-center">No words available</div>;
 
     return (
-        <div className="w-full h-full flex flex-col items-center p-6 max-w-2xl mx-auto">
+        <div className="w-full h-full flex flex-col items-center p-4 sm:p-6 max-w-2xl mx-auto overflow-y-auto">
             {/* Header / Progress */}
-            <div className="w-full flex items-center justify-between mb-10 text-slate-400 text-[10px] font-black tracking-widest uppercase">
+            <div className="w-full flex items-center justify-between mb-6 sm:mb-10 text-slate-400 text-[10px] font-black tracking-widest uppercase">
                 <div className="flex items-center gap-2 bg-slate-100 px-3 py-1 rounded-full text-indigo-600 font-bold">
                     <GraduationCap size={14} />
                     RECALL MODE
@@ -117,7 +117,7 @@ export function RecallView({ words }: Props) {
             </div>
 
             {/* Question Card */}
-            <div className="w-full bg-white rounded-3xl shadow-xl p-10 mb-8 border border-slate-100 flex flex-col items-center relative overflow-hidden">
+            <div className="w-full bg-white rounded-2xl sm:rounded-3xl shadow-xl p-6 sm:p-10 mb-6 sm:mb-8 border border-slate-100 flex flex-col items-center relative overflow-hidden">
                 {/* Mastery Progress Bar */}
                 <div className="absolute top-0 left-0 w-full h-1 bg-slate-50 flex">
                     <div
@@ -127,13 +127,13 @@ export function RecallView({ words }: Props) {
                     <div className="h-full bg-red-100" style={{ width: `${((sessionWords.length - words.length) / words.length) * 100}%` }} />
                 </div>
 
-                <span className="text-indigo-500 font-bold mb-4 tracking-widest text-[11px] uppercase opacity-60">WHAT IS THE MEANING?</span>
+                <span className="text-indigo-500 font-bold mb-3 sm:mb-4 tracking-widest text-[9px] sm:text-[11px] uppercase opacity-60">WHAT IS THE MEANING?</span>
                 <AnimatePresence mode="wait">
                     <motion.h2
                         key={currentWord.id + currentIndex}
                         initial={{ opacity: 0, scale: 0.9 }}
                         animate={{ opacity: 1, scale: 1 }}
-                        className="text-5xl font-black text-slate-800 mb-6"
+                        className="text-3xl sm:text-5xl font-black text-slate-800 mb-4 sm:mb-6 text-center"
                     >
                         {currentWord.word}
                     </motion.h2>
@@ -147,7 +147,7 @@ export function RecallView({ words }: Props) {
             </div>
 
             {/* Options Grid */}
-            <div className="w-full grid grid-cols-1 gap-3">
+            <div className="w-full grid grid-cols-1 gap-2 sm:gap-3">
                 {options.map((option, idx) => {
                     const isSelected = selectedOption === option;
                     const isThisCorrect = option === currentWord.meaning;
@@ -176,11 +176,11 @@ export function RecallView({ words }: Props) {
                             key={`${currentIndex}-${idx}`}
                             disabled={!!selectedOption}
                             onClick={() => handleAnswer(option)}
-                            className={`w-full p-6 rounded-2xl border-2 text-left font-bold text-xl transition-all flex items-center justify-between group ${bgColor} ${borderColor} ${textColor}`}
+                            className={`w-full p-4 sm:p-6 rounded-xl sm:rounded-2xl border-2 text-left font-bold text-lg sm:text-xl transition-all flex items-center justify-between group ${bgColor} ${borderColor} ${textColor}`}
                         >
-                            <span>{option}</span>
-                            {selectedOption && isThisCorrect && <CheckCircle2 size={20} className="text-green-600" />}
-                            {selectedOption && isSelected && !isThisCorrect && <XCircle size={20} className="text-red-600" />}
+                            <span className="line-clamp-2">{option}</span>
+                            {selectedOption && isThisCorrect && <CheckCircle2 size={20} className="text-green-600 shrink-0" />}
+                            {selectedOption && isSelected && !isThisCorrect && <XCircle size={20} className="text-red-600 shrink-0" />}
                         </button>
                     );
                 })}

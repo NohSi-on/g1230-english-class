@@ -13,6 +13,8 @@ import { VocabStudyLayout } from './components/learning/vocab/VocabStudyLayout';
 import VocabManagementPage from './pages/VocabManagementPage';
 import { AuthProvider } from './contexts/AuthContext';
 import { ProtectedRoute } from './components/auth/ProtectedRoute';
+import StudentLoginPage from './pages/StudentLoginPage';
+import StudentDashboard from './pages/StudentDashboard';
 
 function App() {
   return (
@@ -20,6 +22,7 @@ function App() {
       <BrowserRouter>
         <Routes>
           <Route path="/login" element={<LoginPage />} />
+          <Route path="/student/login" element={<StudentLoginPage />} />
 
           <Route path="/" element={
             <ProtectedRoute>
@@ -27,6 +30,7 @@ function App() {
             </ProtectedRoute>
           }>
             <Route index element={<Navigate to="/learn" replace />} />
+            <Route path="student/dashboard" element={<StudentDashboard />} />
             <Route path="books" element={<BooksPage />} />
             <Route path="learn" element={<LearningPage />} />
             <Route path="learn/vocab/:bookId" element={<VocabUnitList />} />

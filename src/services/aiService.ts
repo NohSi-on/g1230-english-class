@@ -1,8 +1,78 @@
 import { GoogleGenerativeAI } from '@google/generative-ai';
 import type { VocabWord } from '../types';
 
-const API_KEY = import.meta.env.VITE_GEMINI_API_KEY || '';
-const genAI = new GoogleGenerativeAI(API_KEY);
+// --- API Key Management (Round Robin) ---
+const API_KEYS = [
+    import.meta.env.VITE_GEMINI_API_KEY_1,
+    import.meta.env.VITE_GEMINI_API_KEY_2,
+    import.meta.env.VITE_GEMINI_API_KEY_3,
+    import.meta.env.VITE_GEMINI_API_KEY_4, // Original key as fallback/final option
+].filter(Boolean) as string[];
+
+let currentKeyIndex = 0;
+
+console.log(`[Gemini] Loaded ${API_KEYS.length} API Keys.`);
+
+const getGenAI = () => new GoogleGenerativeAI(API_KEYS[currentKeyIndex]);
+
+const rotateKey = () => {
+    const prevIndex = currentKeyIndex;
+    currentKeyIndex = (currentKeyIndex + 1) % API_KEYS.length;
+    console.warn(`[Gemini] API Key Rotation: ${prevIndex} -> ${currentKeyIndex}`);
+};
+
+/**
+ * Generic Wrapper for Gemini API calls with specific Error Handling for 429/Quota.
+ */
+async function executeWithRetry<T>(
+    operation: (model: any) => Promise<T>,
+    modelNameCallback: () => Promise<string>,
+    systemInstruction?: string,
+    jsonMode: boolean = true
+): Promise<T> {
+    let lastError: any;
+
+    // Try each key once (total attempts = number of keys)
+    for (let attempt = 0; attempt < API_KEYS.length; attempt++) {
+        try {
+            const modelName = await modelNameCallback();
+            const genAI = getGenAI();
+            const modelParams: any = {
+                model: modelName,
+            };
+            if (jsonMode) {
+                modelParams.generationConfig = { responseMimeType: "application/json" };
+            }
+            if (systemInstruction) {
+                modelParams.systemInstruction = systemInstruction;
+            }
+
+            const model = genAI.getGenerativeModel(modelParams);
+
+            return await operation(model);
+
+        } catch (error: any) {
+            lastError = error;
+            const msg = error.message || '';
+            const isQuotaError = msg.includes('429') ||
+                msg.includes('Resource has been exhausted') ||
+                msg.includes('Too Many Requests');
+
+            if (isQuotaError) {
+                console.warn(`[Gemini] Quota exhausted on Key ${currentKeyIndex}. Retrying with next key...`);
+                rotateKey();
+                // Continue loop to retry with new key
+                continue;
+            } else {
+                // If it's not a quota error, throw immediately (e.g. 400 Bad Request)
+                throw error;
+            }
+        }
+    }
+
+    throw new Error(`[Gemini] All API keys have been exhausted or failed. Last error: ${lastError?.message}`);
+}
+
 
 export interface QuestionData {
     type: string;
@@ -29,41 +99,30 @@ const getDynamicModel = async (): Promise<string> => {
     if (cachedModel) return cachedModel;
 
     try {
-        console.log("[Gemini] Querying available models...");
-        const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models?key=${API_KEY}`);
+        // Query models using the CURRENT key
+        const currentKey = API_KEYS[currentKeyIndex];
+        console.log(`[Gemini] Querying available models with Key Index ${currentKeyIndex}...`);
+
+        const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models?key=${currentKey}`);
 
         if (!response.ok) {
             console.warn(`[Gemini] Failed to fetch models (${response.status}). Using safe fallback.`);
-            cachedModel = 'gemini-1.5-flash-latest';
-            return cachedModel;
+            // Fallback: 2.5 Flash -> 2.0 Flash
+            return 'gemini-2.0-flash';
         }
 
         const data = await response.json();
-        // Remove 'models/' prefix and filter for valid generation models
         const availableModels = (data.models || [])
-            .filter((m: any) => m.supportedGenerationMethods.includes("generateContent"))
             .map((m: any) => m.name.replace('models/', ''));
 
         console.log("[Gemini] Available models:", availableModels);
 
-        if (availableModels.length === 0) {
-            console.warn("[Gemini] No 'generateContent' models found. Using fallback.");
-            return 'gemini-1.5-flash-latest';
-        }
-
-        // 2. Priority List (Updated for Gemini 3.0)
         const priorityList = [
-            'gemini-3.0-flash',       // Newest, fastest, cost-effective
             'gemini-2.5-flash',
-            'gemini-2.5-pro',
             'gemini-2.0-flash',
-            'gemini-2.0-pro-exp',
-            'gemini-1.5-pro-latest',
-            'gemini-1.5-pro',
-            'gemini-1.5-flash-latest',
+            // User explicitly requested to remove 1.5-flash and Pro models.
         ];
 
-        // 3. Find first match in priority list
         for (const model of priorityList) {
             if (availableModels.includes(model)) {
                 console.log(`[Gemini] Best model selected: ${model}`);
@@ -72,41 +131,19 @@ const getDynamicModel = async (): Promise<string> => {
             }
         }
 
-        // 4. Smart Fallback: Prefer "flash" then "pro" from valid list
-        const fallbackFlash = availableModels.find((m: string) => m.includes('flash') && !m.includes('image'));
-        if (fallbackFlash) {
-            console.log(`[Gemini] Smart fallback (Flash): ${fallbackFlash}`);
-            cachedModel = fallbackFlash;
-            return fallbackFlash;
-        }
-
-        const fallbackPro = availableModels.find((m: string) => m.includes('pro') && !m.includes('image'));
-        if (fallbackPro) {
-            console.log(`[Gemini] Smart fallback (Pro): ${fallbackPro}`);
-            cachedModel = fallbackPro;
-            return fallbackPro;
-        }
-
-        // 5. Ultimate Fallback: Just grab the first valid one
-        console.warn(`[Gemini] No preferred model found. Using first available: ${availableModels[0]}`);
-        cachedModel = availableModels[0];
-        return cachedModel as string;
+        console.warn(`[Gemini] No preferred Flash model found. Fallback to gemini-2.0-flash.`);
+        cachedModel = 'gemini-2.0-flash';
+        return cachedModel;
 
     } catch (error) {
         console.error("[Gemini] Model discovery error:", error);
-        cachedModel = 'gemini-1.5-flash-latest';
-        return cachedModel;
+        return 'gemini-2.0-flash';
     }
 };
 
 // --- Step 1: Fast Answer Key Extraction (OMR Mode) ---
 export const extractAnswerMap = async (text: string): Promise<AnswerMap> => {
-    if (!API_KEY) throw new Error('Gemini API Key is missing');
-    const modelName = await getDynamicModel();
-    const model = genAI.getGenerativeModel({
-        model: modelName,
-        generationConfig: { responseMimeType: "application/json" }
-    });
+    if (API_KEYS.length === 0) throw new Error('No Gemini API Keys provided.');
 
     const prompt = `
      You are a precise data extractor.
@@ -123,24 +160,16 @@ export const extractAnswerMap = async (text: string): Promise<AnswerMap> => {
      ${text.substring(0, 25000)}
      `;
 
-    try {
+    return executeWithRetry(async (model) => {
         const result = await model.generateContent(prompt);
         const response = await result.response;
         return JSON.parse(response.text());
-    } catch (e) {
-        console.error("Answer Map Extraction Failed:", e);
-        return {};
-    }
+    }, getDynamicModel);
 };
 
 // --- Step 3: Deep Analysis with Verified Answers ---
 export const analyzeDeepWithVerifiedAnswers = async (questionText: string, verifiedAnswers: AnswerMap, bookId: string = "book"): Promise<QuestionData[]> => {
-    if (!API_KEY) throw new Error('Gemini API Key is missing');
-    const modelName = await getDynamicModel();
-    const model = genAI.getGenerativeModel({
-        model: modelName,
-        generationConfig: { responseMimeType: "application/json" }
-    });
+    if (API_KEYS.length === 0) throw new Error('No Gemini API Keys provided.');
 
     const verifiedAnswersStr = JSON.stringify(verifiedAnswers, null, 2);
 
@@ -174,40 +203,20 @@ export const analyzeDeepWithVerifiedAnswers = async (questionText: string, verif
     ${questionText.substring(0, 30000)}
     `;
 
-    try {
+    return executeWithRetry(async (model) => {
         const result = await model.generateContent(prompt);
         const response = await result.response;
         const text = response.text();
-
-        // Clean markdown if present
         const cleanJson = text.replace(/```json\n?|```/g, '').trim();
         const parsed = JSON.parse(cleanJson);
-
-        if (!Array.isArray(parsed)) {
-            throw new Error('AI response is not a valid array');
-        }
-
+        if (!Array.isArray(parsed)) throw new Error('AI response is not a valid array');
         return parsed;
-    } catch (error) {
-        console.error('Gemini Deep Analysis Error:', error);
-        throw new Error('Failed to analyze content with AI: ' + (error instanceof Error ? error.message : 'Unknown error'));
-    }
+    }, getDynamicModel);
 };
 
 // --- Legacy / Direct Analysis ---
 export const analyzeText = async (questionText: string, answerKeyText: string | null, bookId: string = "book"): Promise<QuestionData[]> => {
-    // Legacy wrapper for direct analysis if needed
-    // For now, let's keep it but ideally we use the 2-step flow.
-    // We can simulate 2-step internally: extract map -> analyze deep.
-    // But to save tokens/time, keeping the old prompt is fine for "Direct Mode".
-
-    if (!API_KEY) throw new Error('Gemini API Key is missing');
-
-    const modelName = await getDynamicModel();
-    const model = genAI.getGenerativeModel({
-        model: modelName,
-        generationConfig: { responseMimeType: "application/json" }
-    });
+    if (API_KEYS.length === 0) throw new Error('No Gemini API Keys provided.');
 
     const prompt = `
     You are an expert English teacher.
@@ -261,36 +270,19 @@ export const analyzeText = async (questionText: string, answerKeyText: string | 
     ${questionText.substring(0, 30000)}
     `;
 
-    try {
+    return executeWithRetry(async (model) => {
         const result = await model.generateContent(prompt);
         const response = await result.response;
         const text = response.text();
-
-        // Clean markdown if present
         const cleanJson = text.replace(/```json\n?|```/g, '').trim();
         const parsed = JSON.parse(cleanJson);
-
-        if (!Array.isArray(parsed)) {
-            throw new Error('AI response is not a valid array');
-        }
-
+        if (!Array.isArray(parsed)) throw new Error('AI response is not a valid array');
         return parsed;
-    } catch (error) {
-        console.error('Gemini Analysis Error:', error);
-        throw new Error('Failed to analyze content with AI: ' + (error instanceof Error ? error.message : 'Unknown error'));
-    }
+    }, getDynamicModel);
 };
 
 export const analyzeImages = async (images: string[], answerKeyText: string | null = null, bookId: string = "book"): Promise<QuestionData[]> => {
-    if (!API_KEY) {
-        throw new Error('Gemini API Key is missing');
-    }
-
-    const modelName = await getDynamicModel();
-    const model = genAI.getGenerativeModel({
-        model: modelName,
-        generationConfig: { responseMimeType: "application/json" }
-    });
+    if (API_KEYS.length === 0) throw new Error('No Gemini API Keys provided.');
 
     const prompt = `
     You are an expert English teacher.
@@ -341,41 +333,27 @@ export const analyzeImages = async (images: string[], answerKeyText: string | nu
     ]
     `;
 
-    try {
-        const imageParts = images.map(img => ({
-            inlineData: {
-                data: img,
-                mimeType: "image/jpeg",
-            },
-        }));
+    const imageParts = images.map(img => ({
+        inlineData: {
+            data: img,
+            mimeType: "image/jpeg",
+        },
+    }));
 
+    return executeWithRetry(async (model) => {
         const result = await model.generateContent([prompt, ...imageParts]);
         const response = await result.response;
         const text = response.text();
-
-        // Clean markdown if present
         const cleanJson = text.replace(/```json\n?|```/g, '').trim();
         const parsed = JSON.parse(cleanJson);
-
-        if (!Array.isArray(parsed)) {
-            throw new Error('AI response is not a valid array');
-        }
-
+        if (!Array.isArray(parsed)) throw new Error('AI response is not a valid array');
         return parsed;
-    } catch (error) {
-        console.error('Gemini Vision Analysis Error:', error);
-        throw new Error('Failed to analyze images with AI: ' + (error instanceof Error ? error.message : 'Unknown error'));
-    }
+    }, getDynamicModel);
 };
 
 // --- Step 4: Regenerate Explanations for Verified Questions ---
 export const regenerateExplanations = async (questions: QuestionData[]): Promise<QuestionData[]> => {
-    if (!API_KEY) throw new Error('Gemini API Key is missing');
-    const modelName = await getDynamicModel();
-    const model = genAI.getGenerativeModel({
-        model: modelName,
-        generationConfig: { responseMimeType: "application/json" }
-    });
+    if (API_KEYS.length === 0) throw new Error('No Gemini API Keys provided.');
 
     // Limit batch size to avoid token limits.
     const BATCH_SIZE = 10;
@@ -383,7 +361,6 @@ export const regenerateExplanations = async (questions: QuestionData[]): Promise
 
     for (let i = 0; i < questions.length; i += BATCH_SIZE) {
         const batch = questions.slice(i, i + BATCH_SIZE);
-        // Minimal context for regeneration
         const batchContent = JSON.stringify(batch.map(q => ({
             itemId: q.itemId, // Use stable ID for matching
             question: q.question,
@@ -412,13 +389,13 @@ export const regenerateExplanations = async (questions: QuestionData[]): Promise
         `;
 
         try {
-            const result = await model.generateContent(prompt);
-            const response = await result.response;
-            const text = response.text();
-
-            // Clean markdown if present
-            const cleanJson = text.replace(/```json\n?|```/g, '').trim();
-            const analyzedBatch = JSON.parse(cleanJson);
+            const analyzedBatch = await executeWithRetry(async (model) => {
+                const result = await model.generateContent(prompt);
+                const response = await result.response;
+                const text = response.text();
+                const cleanJson = text.replace(/```json\n?|```/g, '').trim();
+                return JSON.parse(cleanJson);
+            }, getDynamicModel);
 
             // Merge back
             batch.forEach((q) => {
@@ -472,12 +449,7 @@ export interface CategoryAnalysisData {
 }
 
 export const generateLearningReport = async (data: ReportInputData): Promise<any> => {
-    if (!API_KEY) throw new Error('Gemini API Key is missing');
-    const modelName = await getDynamicModel();
-    const model = genAI.getGenerativeModel({
-        model: modelName,
-        generationConfig: { responseMimeType: "application/json" }
-    });
+    if (API_KEYS.length === 0) throw new Error('No Gemini API Keys provided.');
 
     const prompt = `
     You are an expert academic counselor at a premium English academy ("JEUS Academy").
@@ -533,27 +505,15 @@ export const generateLearningReport = async (data: ReportInputData): Promise<any
     }
     `;
 
-    try {
+    return executeWithRetry(async (model) => {
         const result = await model.generateContent(prompt);
         const response = await result.response;
         return JSON.parse(response.text());
-    } catch (error) {
-        console.error('Report Generation Failed:', error);
-        throw new Error('Failed to generate report');
-    }
+    }, getDynamicModel);
 };
 
-/**
- * Fundamental Separation: Analyzes a SINGLE category (Reading or Grammar)
- * This prevents context leakage between unrelated subjects.
- */
 export const generateCategoryAnalysis = async (data: CategoryAnalysisData): Promise<any> => {
-    if (!API_KEY) throw new Error('Gemini API Key is missing');
-    const modelName = await getDynamicModel();
-    const model = genAI.getGenerativeModel({
-        model: modelName,
-        generationConfig: { responseMimeType: "application/json" }
-    });
+    if (API_KEYS.length === 0) throw new Error('No Gemini API Keys provided.');
 
     const prompt = `
     You are a specialized academic consultant for ${data.category} at JEUS Academy.
@@ -580,9 +540,11 @@ export const generateCategoryAnalysis = async (data: CategoryAnalysisData): Prom
     `;
 
     try {
-        const result = await model.generateContent(prompt);
-        const response = await result.response;
-        return JSON.parse(response.text());
+        return await executeWithRetry(async (model) => {
+            const result = await model.generateContent(prompt);
+            const response = await result.response;
+            return JSON.parse(response.text());
+        }, getDynamicModel);
     } catch (error) {
         console.error(`Category analysis failed for ${data.category}:`, error);
         return {
@@ -619,14 +581,7 @@ export interface OptimizedReportInput {
 }
 
 export const generateOptimizedReport = async (data: OptimizedReportInput): Promise<any> => {
-    if (!API_KEY) throw new Error('Gemini API Key is missing');
-
-    const modelName = await getDynamicModel();
-    console.log(`[Optimized Report] Using model: ${modelName}`);
-    const model = genAI.getGenerativeModel({
-        model: modelName,
-        generationConfig: { responseMimeType: "application/json" }
-    });
+    if (API_KEYS.length === 0) throw new Error('No Gemini API Keys provided.');
 
     const grammarSection = data.grammarData ? `
     **문법(GRAMMAR)**:
@@ -680,9 +635,11 @@ ${readingSection}
 5. 영어 단어나 문법 용어는 괄호 안에 병기할 수 있습니다. 예: "관계대명사(Relative Pronoun)"`;
 
     try {
-        const result = await model.generateContent(prompt);
-        const response = await result.response;
-        return JSON.parse(response.text());
+        return await executeWithRetry(async (model) => {
+            const result = await model.generateContent(prompt);
+            const response = await result.response;
+            return JSON.parse(response.text());
+        }, getDynamicModel);
     } catch (error) {
         console.error('Optimized Report Generation Failed:', error);
         // Return template fallback
@@ -710,14 +667,10 @@ ${readingSection}
         };
     }
 };
+
 // --- Step 6: AI-Assisted Vocab Cleaning ---
 export const cleanVocabData = async (rawData: any[]): Promise<Partial<VocabWord>[]> => {
-    if (!API_KEY) throw new Error('Gemini API Key is missing');
-    const modelName = await getDynamicModel();
-    const model = genAI.getGenerativeModel({
-        model: modelName,
-        generationConfig: { responseMimeType: "application/json" }
-    });
+    if (API_KEYS.length === 0) throw new Error('No Gemini API Keys provided.');
 
     const prompt = `
     You are a professional English lexicographer. 
@@ -733,11 +686,13 @@ export const cleanVocabData = async (rawData: any[]): Promise<Partial<VocabWord>
     `;
 
     try {
-        const result = await model.generateContent(prompt);
-        const response = await result.response;
-        const text = response.text();
-        const cleanJson = text.replace(/```json\n?|```/g, '').trim();
-        return JSON.parse(cleanJson);
+        return await executeWithRetry(async (model) => {
+            const result = await model.generateContent(prompt);
+            const response = await result.response;
+            const text = response.text();
+            const cleanJson = text.replace(/```json\n?|```/g, '').trim();
+            return JSON.parse(cleanJson);
+        }, getDynamicModel);
     } catch (error) {
         console.error('AI Vocab Cleaning Failed:', error);
         return rawData; // Fallback to raw if AI fails
@@ -746,12 +701,7 @@ export const cleanVocabData = async (rawData: any[]): Promise<Partial<VocabWord>
 
 // --- Step 7: AI-Powered Vocab Extraction from Raw Text ---
 export const extractVocabFromText = async (text: string): Promise<Partial<VocabWord>[]> => {
-    if (!API_KEY) throw new Error('Gemini API Key is missing');
-    const modelName = await getDynamicModel();
-    const model = genAI.getGenerativeModel({
-        model: modelName,
-        generationConfig: { responseMimeType: "application/json" }
-    });
+    if (API_KEYS.length === 0) throw new Error('No Gemini API Keys provided.');
 
     const prompt = `
     You are an expert English teacher's assistant.
@@ -768,11 +718,13 @@ export const extractVocabFromText = async (text: string): Promise<Partial<VocabW
     `;
 
     try {
-        const result = await model.generateContent(prompt);
-        const response = await result.response;
-        const responseText = response.text();
-        const cleanJson = responseText.replace(/```json\n?|```/g, '').trim();
-        return JSON.parse(cleanJson);
+        return await executeWithRetry(async (model) => {
+            const result = await model.generateContent(prompt);
+            const response = await result.response;
+            const responseText = response.text();
+            const cleanJson = responseText.replace(/```json\n?|```/g, '').trim();
+            return JSON.parse(cleanJson);
+        }, getDynamicModel);
     } catch (error) {
         console.error('AI Vocab Extraction Failed:', error);
         throw new Error('Failed to extract vocabulary from text using AI');
