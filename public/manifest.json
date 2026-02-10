@@ -1,0 +1,32 @@
+{
+    "name": "G1230 영어학습",
+    "short_name": "G1230",
+    "description": "G1230 영어 학습 플랫폼 - 단어, 문법, 독해 학습",
+    "start_url": "/student/login",
+    "display": "standalone",
+    "background_color": "#f8fafc",
+    "theme_color": "#4f46e5",
+    "orientation": "portrait",
+    "icons": [
+        {
+            "src": "/logo.png",
+            "sizes": "192x192",
+            "type": "image/png",
+            "purpose": "any maskable"
+        },
+        {
+            "src": "/logo.png",
+            "sizes": "512x512",
+            "type": "image/png",
+            "purpose": "any maskable"
+        }
+    ],
+    "categories": [
+        "education",
+        "productivity"
+    ],
+    "lang": "ko-KR",
+    "dir": "ltr",
+    "scope": "/",
+    "prefer_related_applications": false
+}
