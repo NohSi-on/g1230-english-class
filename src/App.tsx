@@ -24,13 +24,29 @@ function App() {
           <Route path="/login" element={<LoginPage />} />
           <Route path="/student/login" element={<StudentLoginPage />} />
 
+          {/* Student Routes - No Sidebar */}
+          <Route path="/student/dashboard" element={
+            <ProtectedRoute>
+              <StudentDashboard />
+            </ProtectedRoute>
+          } />
+          <Route path="/student/vocab/:bookId" element={
+            <ProtectedRoute>
+              <VocabUnitList />
+            </ProtectedRoute>
+          } />
+          <Route path="/student/vocab/study/:setId" element={
+            <ProtectedRoute>
+              <VocabStudyLayout />
+            </ProtectedRoute>
+          } />
+
           <Route path="/" element={
             <ProtectedRoute>
               <Layout />
             </ProtectedRoute>
           }>
             <Route index element={<Navigate to="/learn" replace />} />
-            <Route path="student/dashboard" element={<StudentDashboard />} />
             <Route path="books" element={<BooksPage />} />
             <Route path="learn" element={<LearningPage />} />
             <Route path="learn/vocab/:bookId" element={<VocabUnitList />} />

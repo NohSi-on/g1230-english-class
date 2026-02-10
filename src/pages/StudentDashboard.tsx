@@ -2,7 +2,7 @@ import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
 import { supabase } from '../lib/supabase';
-import { BookOpen, BrainCircuit, Clock, ChevronRight, GraduationCap, LogOut } from 'lucide-react';
+import { BookOpen, BrainCircuit, Clock, ChevronRight, GraduationCap, LogOut, Download, X } from 'lucide-react';
 
 interface AssignedBook {
     id: string;
@@ -17,12 +17,34 @@ export default function StudentDashboard() {
     const { student, signOut } = useAuth();
     const [books, setBooks] = useState<AssignedBook[]>([]);
     const [loading, setLoading] = useState(true);
+    const [deferredPrompt, setDeferredPrompt] = useState<any>(null);
+    const [showInstallPrompt, setShowInstallPrompt] = useState(false);
 
     useEffect(() => {
         if (student) {
             fetchAssignedBooks();
         }
     }, [student]);
+
+    useEffect(() => {
+        const handler = (e: any) => {
+            e.preventDefault();
+            setDeferredPrompt(e);
+            setShowInstallPrompt(true);
+        };
+        window.addEventListener('beforeinstallprompt', handler);
+        return () => window.removeEventListener('beforeinstallprompt', handler);
+    }, []);
+
+    const handleInstallClick = async () => {
+        if (!deferredPrompt) return;
+        deferredPrompt.prompt();
+        const { outcome } = await deferredPrompt.userChoice;
+        if (outcome === 'accepted') {
+            setShowInstallPrompt(false);
+        }
+        setDeferredPrompt(null);
+    };
 
     const fetchAssignedBooks = async () => {
         if (!student) return;
@@ -56,14 +78,17 @@ export default function StudentDashboard() {
             const assessmentMap = new Map();
             assessments?.forEach(a => assessmentMap.set(a.book_id, a));
 
-            const formatted: AssignedBook[] = uniqueBooks.map(b => {
-                const a = assessmentMap.get(b.id);
-                return {
-                    ...b,
-                    last_studied: a?.updated_at,
-                    status: a?.status || 'ASSIGNED'
-                };
-            });
+            // Filter to WORD category only for vocab learning
+            const formatted: AssignedBook[] = uniqueBooks
+                .filter(b => b.category === 'WORD')
+                .map(b => {
+                    const a = assessmentMap.get(b.id);
+                    return {
+                        ...b,
+                        last_studied: a?.updated_at,
+                        status: a?.status || 'ASSIGNED'
+                    };
+                });
 
             // Sort by last studied first, then title
             formatted.sort((a, b) => {
@@ -102,6 +127,29 @@ export default function StudentDashboard() {
     return (
         <div className="min-h-screen bg-slate-50 flex flex-col">
             {/* Header */}
+            {/* PWA Install Prompt */}
+            {showInstallPrompt && (
+                <div className="fixed top-4 left-4 right-4 z-50 bg-indigo-600 text-white p-4 rounded-2xl shadow-2xl flex items-center gap-3 animate-in slide-in-from-top">
+                    <Download size={24} className="shrink-0" />
+                    <div className="flex-1">
+                        <p className="font-bold text-sm">홈 화면에 추가하기</p>
+                        <p className="text-xs text-indigo-100">앱처럼 빠르게 접속하세요</p>
+                    </div>
+                    <button
+                        onClick={handleInstallClick}
+                        className="bg-white text-indigo-600 px-4 py-2 rounded-xl font-bold text-sm hover:bg-indigo-50 transition-colors"
+                    >
+                        설치
+                    </button>
+                    <button
+                        onClick={() => setShowInstallPrompt(false)}
+                        className="p-2 hover:bg-indigo-700 rounded-lg transition-colors"
+                    >
+                        <X size={20} />
+                    </button>
+                </div>
+            )}
+
             <header className="bg-white border-b border-slate-200 sticky top-0 z-30 px-6 py-4">
                 <div className="max-w-4xl mx-auto flex justify-between items-center">
                     <div className="flex items-center gap-3">
@@ -139,7 +187,7 @@ export default function StudentDashboard() {
                         {books.map((book) => (
                             <button
                                 key={book.id}
-                                onClick={() => navigate(`/learn/vocab/${book.id}`)}
+                                onClick={() => navigate(`/student/vocab/${book.id}`)}
                                 className="bg-white p-6 rounded-[2rem] border-2 border-transparent hover:border-indigo-500 transition-all text-left shadow-sm hover:shadow-xl hover:shadow-indigo-50/50 group flex flex-col h-full active:scale-[0.98]"
                             >
                                 <div className="flex-1">
