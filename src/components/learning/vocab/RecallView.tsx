@@ -2,12 +2,16 @@ import { useState, useMemo } from 'react';
 import type { VocabWord } from '../../../types';
 import { CheckCircle2, XCircle, Volume2, ArrowRight, RefreshCw, GraduationCap } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
+import { saveVocabProgress } from '../../../services/vocabProgressService';
 
 interface Props {
     words: VocabWord[];
+    studentId?: string;
+    bookId?: string;
+    vocabSetId?: string;
 }
 
-export function RecallView({ words }: Props) {
+export function RecallView({ words, studentId, bookId, vocabSetId }: Props) {
     const [sessionWords, setSessionWords] = useState<VocabWord[]>(words);
     const [currentIndex, setCurrentIndex] = useState(0);
     const [selectedOption, setSelectedOption] = useState<string | null>(null);
@@ -29,7 +33,7 @@ export function RecallView({ words }: Props) {
         return [currentWord.meaning, ...others].sort(() => Math.random() - 0.5);
     }, [currentIndex, words, currentWord]);
 
-    const handleAnswer = (option: string) => {
+    const handleAnswer = async (option: string) => {
         if (selectedOption) return;
         setSelectedOption(option);
 
@@ -40,6 +44,24 @@ export function RecallView({ words }: Props) {
         } else {
             // Mastery Logic: Add to end if wrong
             setSessionWords(prev => [...prev, currentWord]);
+        }
+
+        // Save progress to database
+        if (studentId && bookId && vocabSetId) {
+            try {
+                await saveVocabProgress({
+                    student_id: studentId,
+                    book_id: bookId,
+                    vocab_set_id: vocabSetId,
+                    mode: 'RECALL',
+                    word_index: currentIndex,
+                    word: currentWord.word,
+                    is_correct: isCorrect,
+                    attempts: 1,
+                });
+            } catch (error) {
+                console.error('Failed to save progress:', error);
+            }
         }
 
         speak(currentWord.word);

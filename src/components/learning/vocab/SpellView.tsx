@@ -2,12 +2,16 @@ import { useState, useEffect, useCallback } from 'react';
 import type { VocabWord } from '../../../types';
 import { RefreshCw, HelpCircle, CheckCircle2, Keyboard, Touchpad } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
+import { saveVocabProgress } from '../../../services/vocabProgressService';
 
 interface Props {
     words: VocabWord[];
+    studentId?: string;
+    bookId?: string;
+    vocabSetId?: string;
 }
 
-export function SpellView({ words }: Props) {
+export function SpellView({ words, studentId, bookId, vocabSetId }: Props) {
     const [currentIndex, setCurrentIndex] = useState(0);
     const [userInput, setUserInput] = useState('');
     const [isFinished, setIsFinished] = useState(false);
@@ -15,6 +19,7 @@ export function SpellView({ words }: Props) {
     const [isChecked, setIsChecked] = useState(false);
     const [isCorrect, setIsCorrect] = useState<boolean | null>(null);
     const [hintLevel, setHintLevel] = useState(0);
+    const [attempts, setAttempts] = useState(0);
 
     // Mobile Mode State
     const [inputMode, setInputMode] = useState<'keyboard' | 'selection'>('selection');
@@ -51,7 +56,7 @@ export function SpellView({ words }: Props) {
         }
     }, [currentWord, userInput, inputMode, generateOptions]);
 
-    const handleLetterSelect = (letter: string) => {
+    const handleLetterSelect = async (letter: string) => {
         if (isChecked) return;
 
         const nextCorrectChar = currentWord.word[userInput.length].toLowerCase();
@@ -66,15 +71,35 @@ export function SpellView({ words }: Props) {
                 setIsChecked(true);
                 setScore(s => s + 1);
                 speak(currentWord.word);
+
+                // Save progress
+                if (studentId && bookId && vocabSetId) {
+                    try {
+                        await saveVocabProgress({
+                            student_id: studentId,
+                            book_id: bookId,
+                            vocab_set_id: vocabSetId,
+                            mode: 'SPELL',
+                            word_index: currentIndex,
+                            word: currentWord.word,
+                            is_correct: true,
+                            attempts: attempts + 1,
+                        });
+                    } catch (error) {
+                        console.error('Failed to save progress:', error);
+                    }
+                }
+
                 setTimeout(() => nextQuestion(), 1500);
             }
         } else {
+            setAttempts(a => a + 1);
             setShake(true);
             setTimeout(() => setShake(false), 500);
         }
     };
 
-    const handleSubmit = (e?: React.FormEvent) => {
+    const handleSubmit = async (e?: React.FormEvent) => {
         if (e) e.preventDefault();
         if (isChecked || !userInput.trim()) return;
 
@@ -84,6 +109,24 @@ export function SpellView({ words }: Props) {
         if (correct) setScore(s => s + 1);
 
         speak(currentWord.word);
+
+        // Save progress
+        if (studentId && bookId && vocabSetId) {
+            try {
+                await saveVocabProgress({
+                    student_id: studentId,
+                    book_id: bookId,
+                    vocab_set_id: vocabSetId,
+                    mode: 'SPELL',
+                    word_index: currentIndex,
+                    word: currentWord.word,
+                    is_correct: correct,
+                    attempts: attempts + 1,
+                });
+            } catch (error) {
+                console.error('Failed to save progress:', error);
+            }
+        }
 
         if (correct) {
             setTimeout(() => nextQuestion(), 1500);
@@ -97,6 +140,7 @@ export function SpellView({ words }: Props) {
             setIsChecked(false);
             setIsCorrect(null);
             setHintLevel(0);
+            setAttempts(0);
         } else {
             setIsFinished(true);
         }

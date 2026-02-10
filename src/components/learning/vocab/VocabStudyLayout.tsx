@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
+import { useAuth } from '../../../contexts/AuthContext';
 import { getVocabWords } from '../../../services/vocabService';
 import type { VocabWord } from '../../../types';
 import { ArrowLeft, BrainCircuit, GraduationCap, Keyboard } from 'lucide-react';
@@ -12,9 +13,11 @@ type StudyMode = 'MEMORIZE' | 'RECALL' | 'SPELL';
 export function VocabStudyLayout() {
     const { setId } = useParams();
     const navigate = useNavigate();
+    const { student } = useAuth();
     const [words, setWords] = useState<VocabWord[]>([]);
     const [loading, setLoading] = useState(true);
     const [mode, setMode] = useState<StudyMode>('MEMORIZE');
+    const [bookId, setBookId] = useState<string>('');
 
     useEffect(() => {
         if (setId) loadWords(setId);
@@ -24,6 +27,11 @@ export function VocabStudyLayout() {
         try {
             const data = await getVocabWords(id);
             setWords(data);
+            // Extract book ID from setId (format: "bookId-day-01")
+            if (id.includes('-')) {
+                const parts = id.split('-');
+                setBookId(parts[0]);
+            }
         } catch (error) {
             console.error(error);
         } finally {
@@ -78,8 +86,8 @@ export function VocabStudyLayout() {
             {/* Content Area */}
             <main className="flex-1 overflow-hidden relative">
                 {mode === 'MEMORIZE' && <FlashcardView words={words} />}
-                {mode === 'RECALL' && <RecallView words={words} />}
-                {mode === 'SPELL' && <SpellView words={words} />}
+                {mode === 'RECALL' && <RecallView words={words} studentId={student?.id} bookId={bookId} vocabSetId={setId || ''} />}
+                {mode === 'SPELL' && <SpellView words={words} studentId={student?.id} bookId={bookId} vocabSetId={setId || ''} />}
             </main>
         </div>
     );

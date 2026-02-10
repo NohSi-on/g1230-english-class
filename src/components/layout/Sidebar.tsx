@@ -1,4 +1,4 @@
-import { BookOpen, Gamepad2, GraduationCap, Settings, FileText, BrainCircuit } from 'lucide-react';
+import { BookOpen, Gamepad2, GraduationCap, Settings, FileText, BrainCircuit, BarChart3 } from 'lucide-react';
 import { Link, useLocation } from 'react-router-dom';
 import { clsx } from 'clsx';
 
@@ -8,6 +8,7 @@ const MENU_ITEMS = [
     { icon: BookOpen, label: '교재 관리', path: '/books', requiredRole: ['admin', 'teacher'] },
     { icon: Gamepad2, label: '나의 클래스', path: '/learn', requiredRole: ['admin', 'teacher'] },
     { icon: BrainCircuit, label: '단어 학습', path: '/vocab', requiredRole: ['admin', 'teacher'] },
+    { icon: BarChart3, label: '단어 학습 진도', path: '/vocab/progress', requiredRole: ['admin', 'teacher'] },
     { icon: GraduationCap, label: '학생 관리', path: '/students', requiredRole: ['admin', 'teacher'] },
     { icon: FileText, label: '학습 리포트', path: '/reports/new', requiredRole: ['admin', 'teacher'] },
     { icon: Settings, label: '접속 허용 관리', path: '/admin/users', requiredRole: 'admin' },
